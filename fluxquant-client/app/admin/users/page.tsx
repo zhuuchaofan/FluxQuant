@@ -51,7 +51,7 @@ import type { UserListDto, CreateUserRequest, UpdateUserRequest } from "@/compon
 const roleLabels: Record<string, { label: string; color: string; icon: typeof Shield }> = {
   Admin: { label: "管理员", color: "text-red-400 border-red-400/30", icon: Shield },
   Manager: { label: "经理", color: "text-orange-400 border-orange-400/30", icon: UserCog },
-  Employee: { label: "员工", color: "text-blue-400 border-blue-400/30", icon: UserCheck },
+  Employee: { label: "员工", color: "text-blue-600 border-blue-400/30", icon: UserCheck },
 };
 
 export default function UsersManagePage() {
@@ -143,17 +143,17 @@ function UsersManageContent() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50">
       {/* Header */}
-      <header className="border-b border-zinc-700/50 backdrop-blur-md bg-zinc-900/80">
+      <header className="border-b border-gray-200 backdrop-blur-md bg-white/80">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-zinc-400 hover:text-white">
+            <Link href="/admin" className="text-gray-600 hover:text-gray-900">
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-blue-400" />
-              <span className="text-xl font-bold text-white">用户管理</span>
+              <Zap className="h-6 w-6 text-blue-600" />
+              <span className="text-xl font-bold text-gray-900">用户管理</span>
             </div>
           </div>
           <Button 
@@ -169,13 +169,13 @@ function UsersManageContent() {
       <main className="container mx-auto px-4 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
+            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
           </div>
         ) : !users || users.length === 0 ? (
           <div className="text-center py-20">
             <Users className="h-16 w-16 text-zinc-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">暂无用户</h3>
-            <p className="text-zinc-400 mb-6">点击上方的新建用户按钮创建账户</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无用户</h3>
+            <p className="text-gray-600 mb-6">点击上方的新建用户按钮创建账户</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -184,7 +184,7 @@ function UsersManageContent() {
               const RoleIcon = roleInfo.icon;
               
               return (
-                <Card key={user.id} className="bg-zinc-800/50 border-zinc-700/50">
+                <Card key={user.id} className="bg-white border-gray-200">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -192,10 +192,10 @@ function UsersManageContent() {
                           <RoleIcon className={`h-5 w-5 ${roleInfo.color.split(" ")[0]}`} />
                         </div>
                         <div>
-                          <p className="text-white font-medium">
+                          <p className="text-gray-900 font-medium">
                             {user.displayName || user.username}
                           </p>
-                          <p className="text-xs text-zinc-500">@{user.username}</p>
+                          <p className="text-xs text-gray-500">@{user.username}</p>
                         </div>
                       </div>
                       <Badge variant="outline" className={roleInfo.color}>
@@ -204,18 +204,18 @@ function UsersManageContent() {
                     </div>
 
                     <div className="space-y-1 text-sm mb-4">
-                      <p className="text-zinc-400">{user.email}</p>
-                      <p className="text-zinc-500">
+                      <p className="text-gray-600">{user.email}</p>
+                      <p className="text-gray-500">
                         {user.allocationCount} 个任务分配
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-zinc-700/50">
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                       <Badge 
                         variant="outline" 
                         className={user.isActive 
                           ? "text-green-400 border-green-400/30" 
-                          : "text-zinc-500 border-zinc-600"
+                          : "text-gray-500 border-gray-300"
                         }
                       >
                         {user.isActive ? "活跃" : "已禁用"}
@@ -229,7 +229,7 @@ function UsersManageContent() {
                             userId: user.id, 
                             username: user.username 
                           })}
-                          className="text-zinc-400 hover:text-white h-8 w-8"
+                          className="text-gray-600 hover:text-gray-900 h-8 w-8"
                         >
                           <Key className="h-4 w-4" />
                         </Button>
@@ -237,7 +237,7 @@ function UsersManageContent() {
                           variant="ghost"
                           size="icon"
                           onClick={() => setUserDialog({ open: true, mode: "edit", user })}
-                          className="text-zinc-400 hover:text-white h-8 w-8"
+                          className="text-gray-600 hover:text-gray-900 h-8 w-8"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -249,7 +249,7 @@ function UsersManageContent() {
                             userId: user.id, 
                             username: user.username 
                           })}
-                          className="text-zinc-400 hover:text-red-400 h-8 w-8"
+                          className="text-gray-600 hover:text-red-400 h-8 w-8"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -300,15 +300,15 @@ function UsersManageContent() {
         open={deleteDialog.open} 
         onOpenChange={(open) => !open && setDeleteDialog({ open: false })}
       >
-        <AlertDialogContent className="bg-zinc-900 border-zinc-700">
+        <AlertDialogContent className="bg-white border-gray-200">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">确认删除用户？</AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-400">
+            <AlertDialogTitle className="text-gray-900">确认删除用户？</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
               确定要删除用户「{deleteDialog.username}」吗？此操作无法撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
+            <AlertDialogCancel className="bg-gray-100 border-gray-200 text-gray-900 hover:bg-zinc-700">
               取消
             </AlertDialogCancel>
             <AlertDialogAction
@@ -375,66 +375,66 @@ function UserFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); else resetForm(); }}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white">
+      <DialogContent className="bg-white border-gray-200 text-gray-900">
         <DialogHeader>
           <DialogTitle>{mode === "create" ? "新建用户" : "编辑用户"}</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogDescription className="text-gray-600">
             {mode === "create" ? "创建新用户账户" : `编辑用户 @${user?.username}`}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           {mode === "create" && (
             <div className="space-y-2">
-              <Label className="text-zinc-300">用户名</Label>
+              <Label className="text-gray-700">用户名</Label>
               <Input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="登录用户名"
-                className="bg-zinc-800 border-zinc-600 text-white"
+                className="bg-gray-100 border-gray-300 text-gray-900"
               />
             </div>
           )}
           <div className="space-y-2">
-            <Label className="text-zinc-300">邮箱</Label>
+            <Label className="text-gray-700">邮箱</Label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@example.com"
-              className="bg-zinc-800 border-zinc-600 text-white"
+              className="bg-gray-100 border-gray-300 text-gray-900"
             />
           </div>
           {mode === "create" && (
             <div className="space-y-2">
-              <Label className="text-zinc-300">密码</Label>
+              <Label className="text-gray-700">密码</Label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="初始密码"
-                className="bg-zinc-800 border-zinc-600 text-white"
+                className="bg-gray-100 border-gray-300 text-gray-900"
               />
             </div>
           )}
           <div className="space-y-2">
-            <Label className="text-zinc-300">显示名称</Label>
+            <Label className="text-gray-700">显示名称</Label>
             <Input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="用户昵称"
-              className="bg-zinc-800 border-zinc-600 text-white"
+              className="bg-gray-100 border-gray-300 text-gray-900"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-zinc-300">角色</Label>
+            <Label className="text-gray-700">角色</Label>
             <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
-              <SelectTrigger className="bg-zinc-800 border-zinc-600 text-white">
+              <SelectTrigger className="bg-gray-100 border-gray-300 text-gray-900">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700">
+              <SelectContent className="bg-gray-100 border-gray-200">
                 <SelectItem value="Admin" className="text-red-400">管理员</SelectItem>
                 <SelectItem value="Manager" className="text-orange-400">经理</SelectItem>
-                <SelectItem value="Employee" className="text-blue-400">员工</SelectItem>
+                <SelectItem value="Employee" className="text-blue-600">员工</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -445,14 +445,14 @@ function UserFormDialog({
                 id="isActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="rounded bg-zinc-800 border-zinc-600"
+                className="rounded bg-gray-100 border-gray-300"
               />
-              <Label htmlFor="isActive" className="text-zinc-300">账户启用</Label>
+              <Label htmlFor="isActive" className="text-gray-700">账户启用</Label>
             </div>
           )}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose} className="text-zinc-400">
+          <Button variant="ghost" onClick={onClose} className="text-gray-600">
             取消
           </Button>
           <Button
@@ -486,22 +486,22 @@ function PasswordResetDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) { onClose(); setPassword(""); } }}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white">
+      <DialogContent className="bg-white border-gray-200 text-gray-900">
         <DialogHeader>
           <DialogTitle>重置密码</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogDescription className="text-gray-600">
             为用户 @{username} 设置新密码
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label className="text-zinc-300">新密码</Label>
+            <Label className="text-gray-700">新密码</Label>
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="输入新密码"
-              className="bg-zinc-800 border-zinc-600 text-white"
+              className="bg-gray-100 border-gray-300 text-gray-900"
             />
           </div>
         </div>

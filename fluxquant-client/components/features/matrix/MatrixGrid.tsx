@@ -2,13 +2,13 @@
 
 import { useState, useMemo, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Settings2, AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
+import { Settings2, AlertTriangle, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { MatrixDataDto, MatrixRowDto, MatrixCellDto, MatrixUserDto } from "./types";
 import { QuotaAdjustDialog } from "./QuotaAdjustDialog";
+import { CreateAllocationDialog } from "./CreateAllocationDialog";
 import { updateAllocationAction } from "@/lib/actions/matrix";
 
 interface MatrixGridProps {
@@ -26,6 +26,12 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
     taskPoolName: string;
     currentQuota: number;
     currentProgress: number;
+  } | null>(null);
+  
+  const [createDialog, setCreateDialog] = useState<{
+    taskPoolId: number;
+    taskPoolName: string;
+    existingUserIds: number[];
   } | null>(null);
 
   const toggleStage = (stageId: number) => {
@@ -68,23 +74,23 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="border-b border-zinc-700">
-            <th className="sticky left-0 z-10 bg-zinc-900 px-4 py-3 text-left text-sm font-medium text-zinc-400 min-w-[200px]">
+          <tr className="border-b border-gray-200">
+            <th className="sticky left-0 z-20 bg-gray-50 px-4 py-3 text-left text-sm font-medium text-gray-700 min-w-[200px]">
               任务池
             </th>
-            <th className="px-3 py-3 text-center text-sm font-medium text-zinc-400 min-w-[80px]">
+            <th className="px-3 py-3 text-center text-sm font-medium text-gray-700 min-w-[80px]">
               总量
             </th>
-            <th className="px-3 py-3 text-center text-sm font-medium text-zinc-400 min-w-[80px]">
-              未分配
+            <th className="px-3 py-3 text-center text-sm font-medium text-gray-700 min-w-[80px]">
+              待分配
             </th>
-            <th className="px-3 py-3 text-center text-sm font-medium text-zinc-400 min-w-[100px]">
+            <th className="px-3 py-3 text-center text-sm font-medium text-gray-700 min-w-[100px]">
               进度
             </th>
             {allUsers.map((user) => (
               <th
                 key={user.id}
-                className="px-3 py-3 text-center text-sm font-medium text-zinc-300 min-w-[100px]"
+                className="px-3 py-3 text-center text-sm font-medium text-gray-700 min-w-[120px]"
               >
                 {user.name}
               </th>
@@ -96,7 +102,7 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
             <Fragment key={`stage-${stage.stageId}`}>
               {/* Stage Header Row */}
               <tr
-                className="bg-zinc-800/50 cursor-pointer hover:bg-zinc-800"
+                className="bg-gray-100 cursor-pointer hover:bg-gray-200"
                 onClick={() => toggleStage(stage.stageId)}
               >
                 <td
@@ -105,14 +111,14 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
                 >
                   <div className="flex items-center gap-2">
                     {expandedStages.has(stage.stageId) ? (
-                      <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      <ChevronDown className="w-4 h-4 text-gray-500" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-zinc-400" />
+                      <ChevronRight className="w-4 h-4 text-gray-500" />
                     )}
-                    <Badge variant="outline" className="text-cyan-400 border-cyan-400/30">
+                    <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50">
                       {stage.stageName}
                     </Badge>
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-gray-500">
                       {stage.taskPools.length} 个任务池
                     </span>
                   </div>
@@ -147,6 +153,13 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
                         currentProgress: pool.progressPercent,
                       })
                     }
+                    onOpenCreateDialog={() =>
+                      setCreateDialog({
+                        taskPoolId: pool.taskPoolId,
+                        taskPoolName: pool.taskPoolName,
+                        existingUserIds: pool.allocations.map(a => a.userId),
+                      })
+                    }
                   />
                 ))}
             </Fragment>
@@ -166,6 +179,19 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
           onSuccess={onRefresh}
         />
       )}
+      
+      {/* Create Allocation Dialog */}
+      {createDialog && (
+        <CreateAllocationDialog
+          open={true}
+          onClose={() => setCreateDialog(null)}
+          taskPoolId={createDialog.taskPoolId}
+          taskPoolName={createDialog.taskPoolName}
+          existingUserIds={createDialog.existingUserIds}
+          availableUsers={allUsers.map(u => ({ userId: u.id, displayName: u.name }))}
+          onSuccess={onRefresh}
+        />
+      )}
     </div>
   );
 }
@@ -179,6 +205,7 @@ interface TaskPoolRowProps {
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onOpenQuotaDialog: () => void;
+  onOpenCreateDialog: () => void;
 }
 
 function TaskPoolRow({
@@ -190,6 +217,7 @@ function TaskPoolRow({
   onSaveEdit,
   onCancelEdit,
   onOpenQuotaDialog,
+  onOpenCreateDialog,
 }: TaskPoolRowProps) {
   // 构建用户到分配的映射
   const allocationMap = useMemo(() => {
@@ -199,13 +227,13 @@ function TaskPoolRow({
   }, [pool.allocations]);
 
   return (
-    <tr className="border-b border-zinc-800 hover:bg-zinc-800/30">
+    <tr className="border-b border-gray-100 hover:bg-gray-50">
       {/* Task Pool Name */}
-      <td className="sticky left-0 z-10 bg-zinc-900 px-4 py-3">
+      <td className="sticky left-0 z-10 bg-white px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-white text-sm">{pool.taskPoolName}</span>
+          <span className="text-gray-900 text-sm">{pool.taskPoolName}</span>
           {pool.isAnomalous && (
-            <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs">
+            <Badge className="bg-red-100 text-red-600 border-red-200 text-xs">
               <AlertTriangle className="w-3 h-3 mr-1" />
               异常
             </Badge>
@@ -217,10 +245,10 @@ function TaskPoolRow({
       <td className="px-3 py-3 text-center">
         <button
           onClick={onOpenQuotaDialog}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-sm transition-colors"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-900 font-mono text-sm transition-colors"
         >
           {pool.totalQuota}
-          <Settings2 className="w-3 h-3 text-zinc-400" />
+          <Settings2 className="w-3 h-3 text-gray-500" />
         </button>
       </td>
 
@@ -229,10 +257,10 @@ function TaskPoolRow({
         <span
           className={`font-mono text-sm ${
             pool.unassigned < 0
-              ? "text-red-400"
+              ? "text-red-600"
               : pool.unassigned === 0
-              ? "text-green-400"
-              : "text-zinc-300"
+              ? "text-green-600"
+              : "text-gray-700"
           }`}
         >
           {pool.unassigned}
@@ -242,8 +270,8 @@ function TaskPoolRow({
       {/* Progress */}
       <td className="px-3 py-3">
         <div className="flex flex-col items-center gap-1">
-          <Progress value={Math.min(pool.progressPercent, 100)} className="h-2 w-16 bg-zinc-700" />
-          <span className="text-xs text-zinc-400">{pool.progressPercent}%</span>
+          <Progress value={Math.min(pool.progressPercent, 100)} className="h-2 w-16 bg-gray-200" />
+          <span className="text-xs text-gray-500">{pool.progressPercent}%</span>
         </div>
       </td>
 
@@ -255,7 +283,13 @@ function TaskPoolRow({
         if (!allocation) {
           return (
             <td key={user.id} className="px-3 py-3 text-center">
-              <span className="text-zinc-600">-</span>
+              <button
+                onClick={onOpenCreateDialog}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-400 hover:text-blue-600 transition-colors"
+                title={`为 ${user.name} 创建分配`}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </td>
           );
         }
@@ -272,7 +306,7 @@ function TaskPoolRow({
                   if (e.key === "Escape") onCancelEdit();
                 }}
                 autoFocus
-                className="w-16 h-8 text-center bg-zinc-800 border-blue-500 text-white font-mono text-sm"
+                className="w-16 h-8 text-center bg-white border-blue-500 text-gray-900 font-mono text-sm"
               />
             ) : (
               <button
@@ -280,15 +314,15 @@ function TaskPoolRow({
                 className={`
                   px-2 py-1 rounded font-mono text-sm transition-colors
                   ${allocation.isCompleted 
-                    ? "bg-green-500/20 text-green-400 border-b-2 border-green-500" 
+                    ? "bg-green-100 text-green-700 border-b-2 border-green-500" 
                     : allocation.isLagging 
-                    ? "bg-yellow-500/10 text-yellow-400" 
-                    : "bg-zinc-800 text-white hover:bg-zinc-700"
+                    ? "bg-yellow-100 text-yellow-700" 
+                    : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                   }
                 `}
               >
                 {allocation.targetQuota}
-                <span className="text-xs text-zinc-500 ml-1">
+                <span className="text-xs text-gray-500 ml-1">
                   ({allocation.currentValid}/{allocation.targetQuota})
                 </span>
               </button>

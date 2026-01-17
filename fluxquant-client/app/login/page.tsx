@@ -51,7 +51,6 @@ function LoginForm() {
         
         if (result.success) {
           toast.success("登录成功！正在跳转...");
-          // 使用 window.location 确保浏览器刷新获取 Cookie
           window.location.href = "/my-stream";
         } else {
           toast.error(result.error || "登录失败");
@@ -65,18 +64,18 @@ function LoginForm() {
   };
   
   return (
-    <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur">
+    <Card className="bg-white border-gray-200 shadow-lg">
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Zap className="h-8 w-8 text-blue-400" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
+          <Zap className="h-8 w-8 text-blue-600" />
+          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 text-transparent bg-clip-text">
             FluxQuant
           </span>
         </div>
-        <CardTitle className="text-white text-xl">
+        <CardTitle className="text-gray-900 text-xl">
           {mode === "login" ? "欢迎回来" : "创建账户"}
         </CardTitle>
-        <CardDescription className="text-zinc-400">
+        <CardDescription className="text-gray-600">
           {mode === "login" 
             ? "登录您的 FluxQuant 账户" 
             : "加入 FluxQuant，开始追踪生产力"}
@@ -86,7 +85,7 @@ function LoginForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-zinc-300">
+            <Label htmlFor="username" className="text-gray-700">
               {mode === "login" ? "用户名或邮箱" : "用户名"}
             </Label>
             <Input
@@ -95,14 +94,14 @@ function LoginForm() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder={mode === "login" ? "请输入用户名或邮箱" : "请输入用户名"}
               required
-              className="bg-zinc-900/50 border-zinc-600 text-white placeholder:text-zinc-500"
+              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
             />
           </div>
           
           {mode === "register" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-zinc-300">邮箱</Label>
+                <Label htmlFor="email" className="text-gray-700">邮箱</Label>
                 <Input
                   id="email"
                   type="email"
@@ -110,25 +109,25 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="请输入邮箱"
                   required
-                  className="bg-zinc-900/50 border-zinc-600 text-white placeholder:text-zinc-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="displayName" className="text-zinc-300">显示名称 (可选)</Label>
+                <Label htmlFor="displayName" className="text-gray-700">显示名称 (可选)</Label>
                 <Input
                   id="displayName"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="您希望如何被称呼"
-                  className="bg-zinc-900/50 border-zinc-600 text-white placeholder:text-zinc-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
             </>
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-zinc-300">密码</Label>
+            <Label htmlFor="password" className="text-gray-700">密码</Label>
             <Input
               id="password"
               type="password"
@@ -136,13 +135,13 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="请输入密码"
               required
-              className="bg-zinc-900/50 border-zinc-600 text-white placeholder:text-zinc-500"
+              className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
             />
           </div>
           
           <Button 
             type="submit" 
-            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
+            className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -157,12 +156,12 @@ function LoginForm() {
         </form>
         
         <div className="mt-6 text-center">
-          <p className="text-zinc-400 text-sm">
+          <p className="text-gray-600 text-sm">
             {mode === "login" ? "还没有账户？" : "已有账户？"}
             <button
               type="button"
               onClick={() => setMode(mode === "login" ? "register" : "login")}
-              className="ml-1 text-cyan-400 hover:text-cyan-300 font-medium"
+              className="ml-1 text-blue-600 hover:text-blue-700 font-medium"
             >
               {mode === "login" ? "立即注册" : "立即登录"}
             </button>
@@ -175,18 +174,18 @@ function LoginForm() {
 
 function LoginFormFallback() {
   return (
-    <Card className="bg-zinc-800/50 border-zinc-700/50 backdrop-blur animate-pulse">
+    <Card className="bg-white border-gray-200 shadow-lg animate-pulse">
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="h-8 w-8 rounded bg-zinc-700" />
-          <div className="h-8 w-32 rounded bg-zinc-700" />
+          <div className="h-8 w-8 rounded bg-gray-200" />
+          <div className="h-8 w-32 rounded bg-gray-200" />
         </div>
-        <div className="h-6 w-24 mx-auto rounded bg-zinc-700" />
+        <div className="h-6 w-24 mx-auto rounded bg-gray-200" />
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="h-10 rounded bg-zinc-700" />
-        <div className="h-10 rounded bg-zinc-700" />
-        <div className="h-10 rounded bg-zinc-700" />
+        <div className="h-10 rounded bg-gray-200" />
+        <div className="h-10 rounded bg-gray-200" />
+        <div className="h-10 rounded bg-gray-200" />
       </CardContent>
     </Card>
   );
@@ -194,12 +193,12 @@ function LoginFormFallback() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <Link 
           href="/" 
-          className="flex items-center gap-2 text-zinc-400 hover:text-white mb-8 transition-colors"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           返回首页

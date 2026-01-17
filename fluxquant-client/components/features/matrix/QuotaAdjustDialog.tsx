@@ -74,10 +74,10 @@ export function QuotaAdjustDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 text-white">
+      <DialogContent className="bg-white border-gray-200 text-gray-900">
         <DialogHeader>
           <DialogTitle>调整任务总量</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogDescription className="text-gray-600">
             {taskPoolName}
           </DialogDescription>
         </DialogHeader>
@@ -85,19 +85,19 @@ export function QuotaAdjustDialog({
         <div className="space-y-4 py-4">
           {/* 当前配额 */}
           <div className="flex items-center justify-between text-sm">
-            <span className="text-zinc-400">当前总量</span>
+            <span className="text-gray-600">当前总量</span>
             <span className="font-mono">{currentQuota}</span>
           </div>
 
           {/* 新配额输入 */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">新总量</Label>
+            <Label className="text-gray-700">新总量</Label>
             <Input
               type="number"
               min={0}
               value={newQuota}
               onChange={(e) => setNewQuota(Math.max(0, parseInt(e.target.value) || 0))}
-              className="bg-zinc-800 border-zinc-600 text-white font-mono text-lg"
+              className="bg-gray-100 border-gray-300 text-gray-900 font-mono text-lg"
             />
             {quotaDiff !== 0 && (
               <p className={`text-sm ${quotaDiff > 0 ? "text-orange-400" : "text-green-400"}`}>
@@ -108,13 +108,13 @@ export function QuotaAdjustDialog({
 
           {/* 进度预览 */}
           {quotaDiff !== 0 && (
-            <div className="p-3 rounded-lg bg-zinc-800 border border-zinc-700">
+            <div className="p-3 rounded-lg bg-gray-100 border border-gray-200">
               <div className="flex items-center gap-2 text-sm">
                 <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                <span className="text-zinc-300">进度影响预览</span>
+                <span className="text-gray-700">进度影响预览</span>
               </div>
-              <p className="text-sm text-zinc-400 mt-2">
-                当前进度 <span className="text-white">{currentProgress}%</span> 将变为{" "}
+              <p className="text-sm text-gray-600 mt-2">
+                当前进度 <span className="text-gray-900">{currentProgress}%</span> 将变为{" "}
                 <span className={newProgress < currentProgress ? "text-orange-400" : "text-green-400"}>
                   {newProgress}%
                 </span>
@@ -124,12 +124,12 @@ export function QuotaAdjustDialog({
 
           {/* 变更原因 */}
           <div className="space-y-2">
-            <Label className="text-zinc-300">变更原因 (必填)</Label>
+            <Label className="text-gray-700">变更原因 (必填)</Label>
             <Input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="如：客户追加 1/17 数据包"
-              className="bg-zinc-800 border-zinc-600 text-white placeholder:text-zinc-500"
+              className="bg-gray-100 border-gray-300 text-gray-900 placeholder:text-gray-500"
             />
           </div>
         </div>
@@ -138,7 +138,7 @@ export function QuotaAdjustDialog({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="text-zinc-400 hover:text-white"
+            className="text-gray-600 hover:text-gray-900"
           >
             取消
           </Button>

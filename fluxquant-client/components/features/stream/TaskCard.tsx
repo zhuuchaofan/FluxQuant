@@ -36,20 +36,20 @@ export function TaskCard({ allocation, onReportSuccess }: TaskCardProps) {
   return (
     <>
       <Card className={`
-        bg-zinc-800/50 border-zinc-700/50 backdrop-blur transition-all
-        hover:border-zinc-600/50 hover:shadow-lg hover:shadow-blue-500/5
+        bg-white border-gray-200 backdrop-blur transition-all
+        hover:border-gray-300/50 hover:shadow-lg hover:shadow-blue-500/5
         ${isCompleted ? "border-green-500/30 bg-green-900/10" : ""}
       `}>
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-400/30">
+              <Badge variant="outline" className="text-xs text-cyan-600 border-cyan-400/30">
                 {allocation.stageName}
               </Badge>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-gray-900">
                 {allocation.taskPoolName}
               </h3>
-              <p className="text-sm text-zinc-500">{allocation.projectName}</p>
+              <p className="text-sm text-gray-500">{allocation.projectName}</p>
             </div>
             {isCompleted ? (
               <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -69,12 +69,12 @@ export function TaskCard({ allocation, onReportSuccess }: TaskCardProps) {
           {/* Progress Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-400">进度</span>
-              <span className="text-white font-mono">
-                <span className="text-cyan-400">{optimisticValid}</span>
-                <span className="text-zinc-500"> + </span>
+              <span className="text-gray-600">进度</span>
+              <span className="text-gray-900 font-mono">
+                <span className="text-cyan-600">{optimisticValid}</span>
+                <span className="text-gray-500"> + </span>
                 <span className="text-orange-400">{optimisticExcluded}</span>
-                <span className="text-zinc-500"> / </span>
+                <span className="text-gray-500"> / </span>
                 <span>{targetQuota}</span>
               </span>
             </div>
@@ -82,7 +82,7 @@ export function TaskCard({ allocation, onReportSuccess }: TaskCardProps) {
               value={Math.min(progressPercent, 100)} 
               className="h-2 bg-zinc-700"
             />
-            <div className="flex items-center justify-between text-xs text-zinc-500">
+            <div className="flex items-center justify-between text-xs text-gray-500">
               <span>有效: {optimisticValid} | 除外: {optimisticExcluded}</span>
               <span>{progressPercent.toFixed(1)}%</span>
             </div>
@@ -90,16 +90,16 @@ export function TaskCard({ allocation, onReportSuccess }: TaskCardProps) {
 
           {/* Remaining Info */}
           {!isCompleted && (
-            <div className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-700/50">
-              <p className="text-sm text-zinc-400">
-                还需 <span className="text-white font-semibold">{remaining}</span> 个单位
+            <div className="p-3 rounded-lg bg-white/50 border border-gray-200">
+              <p className="text-sm text-gray-600">
+                还需 <span className="text-gray-900 font-semibold">{remaining}</span> 个单位
               </p>
             </div>
           )}
 
           {/* Last Report */}
           {allocation.lastReport && (
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
               <Clock className="w-3 h-3" />
               <span>
                 最近填报: {new Date(allocation.lastReport.createdAt).toLocaleString("zh-CN")} 

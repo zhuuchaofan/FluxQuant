@@ -101,10 +101,10 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="bottom" className="bg-zinc-900 border-zinc-700 h-auto max-h-[85vh] overflow-y-auto">
+      <SheetContent side="bottom" className="bg-white border-gray-200 h-auto max-h-[85vh] overflow-y-auto">
         <SheetHeader className="text-left">
-          <SheetTitle className="text-white">{allocation.taskPoolName}</SheetTitle>
-          <SheetDescription className="text-zinc-400">
+          <SheetTitle className="text-gray-900">{allocation.taskPoolName}</SheetTitle>
+          <SheetDescription className="text-gray-600">
             {allocation.stageName} · {allocation.projectName}
           </SheetDescription>
         </SheetHeader>
@@ -112,14 +112,14 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
         <div className="mt-6 space-y-6">
           {/* 有效产出 */}
           <div className="space-y-3">
-            <Label className="text-zinc-300 text-base">今天搞定了多少？</Label>
+            <Label className="text-gray-700 text-base">今天搞定了多少？</Label>
             <div className="flex items-center gap-3">
               <Input
                 type="number"
                 min={0}
                 value={validQty}
                 onChange={(e) => setValidQty(Math.max(0, parseInt(e.target.value) || 0))}
-                className="text-3xl h-16 bg-zinc-800 border-zinc-600 text-white text-center font-mono"
+                className="text-3xl h-16 bg-gray-100 border-gray-300 text-gray-900 text-center font-mono"
               />
             </div>
             <div className="flex gap-2">
@@ -128,7 +128,7 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickAdd(10)}
-                className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+                className="border-gray-300 text-gray-700 hover:bg-gray-100"
               >
                 <Plus className="w-3 h-3 mr-1" />10
               </Button>
@@ -137,7 +137,7 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickAdd(50)}
-                className="border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+                className="border-gray-300 text-gray-700 hover:bg-gray-100"
               >
                 <Plus className="w-3 h-3 mr-1" />50
               </Button>
@@ -146,7 +146,7 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
                 variant="outline"
                 size="sm"
                 onClick={handleMaxValid}
-                className="border-cyan-600 text-cyan-400 hover:bg-cyan-900/20"
+                className="border-cyan-600 text-cyan-600 hover:bg-cyan-900/20"
               >
                 MAX ({Math.max(0, allocation.targetQuota - currentTotal - excludedQty)})
               </Button>
@@ -154,37 +154,37 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
           </div>
 
           {/* 除外/异常 折叠区 */}
-          <div className="border border-zinc-700 rounded-lg overflow-hidden">
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
               type="button"
               onClick={() => setShowExclusion(!showExclusion)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-zinc-800/50 transition-colors"
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-white transition-colors"
             >
-              <span className="text-zinc-400">遇到无法处理的数据？</span>
+              <span className="text-gray-600">遇到无法处理的数据？</span>
               {showExclusion ? (
-                <ChevronUp className="w-4 h-4 text-zinc-500" />
+                <ChevronUp className="w-4 h-4 text-gray-500" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-zinc-500" />
+                <ChevronDown className="w-4 h-4 text-gray-500" />
               )}
             </button>
 
             {showExclusion && (
-              <div className="p-4 pt-0 space-y-4 border-t border-zinc-700">
+              <div className="p-4 pt-0 space-y-4 border-t border-gray-200">
                 {/* 除外数量 */}
                 <div className="space-y-2">
-                  <Label className="text-zinc-400 text-sm">除外数量</Label>
+                  <Label className="text-gray-600 text-sm">除外数量</Label>
                   <Input
                     type="number"
                     min={0}
                     value={excludedQty}
                     onChange={(e) => setExcludedQty(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="bg-zinc-800 border-zinc-600 text-white"
+                    className="bg-gray-100 border-gray-300 text-gray-900"
                   />
                 </div>
 
                 {/* 除外原因 */}
                 <div className="space-y-2">
-                  <Label className="text-zinc-400 text-sm">原因 (必选)</Label>
+                  <Label className="text-gray-600 text-sm">原因 (必选)</Label>
                   <div className="flex flex-wrap gap-2">
                     {EXCLUSION_REASONS.map((reason) => (
                       <Badge
@@ -192,8 +192,8 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
                         variant={exclusionReason === reason ? "default" : "outline"}
                         className={`cursor-pointer transition-colors ${
                           exclusionReason === reason
-                            ? "bg-orange-500 text-white"
-                            : "border-zinc-600 text-zinc-400 hover:bg-zinc-800"
+                            ? "bg-orange-500 text-gray-900"
+                            : "border-gray-300 text-gray-600 hover:bg-gray-100"
                         }`}
                         onClick={() => setExclusionReason(reason)}
                       >
@@ -205,12 +205,12 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
 
                 {/* 备注 */}
                 <div className="space-y-2">
-                  <Label className="text-zinc-400 text-sm">备注 (可选)</Label>
+                  <Label className="text-gray-600 text-sm">备注 (可选)</Label>
                   <Input
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="如：损坏文件名..."
-                    className="bg-zinc-800 border-zinc-600 text-white placeholder:text-zinc-500"
+                    className="bg-gray-100 border-gray-300 text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
               </div>
@@ -238,8 +238,8 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
 
           {/* 剩余提示 */}
           {remaining > 0 && newTotal > currentTotal && (
-            <p className="text-center text-sm text-zinc-500">
-              提交后还剩 <span className="text-cyan-400">{remaining}</span> 个单位
+            <p className="text-center text-sm text-gray-500">
+              提交后还剩 <span className="text-cyan-600">{remaining}</span> 个单位
             </p>
           )}
         </div>
