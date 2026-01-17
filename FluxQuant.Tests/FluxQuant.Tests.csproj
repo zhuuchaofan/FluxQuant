@@ -23,8 +23,11 @@
     <!-- Mock 库 -->
     <PackageReference Include="Moq" Version="4.20.72" />
     
-    <!-- EF Core 内存数据库 -->
+    <!-- EF Core 内存数据库（用于快速简单测试） -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
+    
+    <!-- Testcontainers PostgreSQL（用于完整集成测试） -->
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>
