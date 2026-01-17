@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace FluxQuant.Server.Domain;
 
 /// <summary>
@@ -28,10 +26,9 @@ public class TaskPool
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     /// <summary>
-    /// 乐观并发控制令牌
+    /// PostgreSQL 并发控制令牌 (xmin)
     /// </summary>
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = [];
+    public uint RowVersion { get; set; }
     
     // 导航属性
     public Stage Stage { get; set; } = null!;

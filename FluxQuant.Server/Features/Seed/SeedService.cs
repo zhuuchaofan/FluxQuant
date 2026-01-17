@@ -24,51 +24,35 @@ public class SeedService
     /// </summary>
     public async Task SeedAsync(CancellationToken ct = default)
     {
+        _logger.LogInformation("开始播种测试数据...");
+
+        // 1. 确保管理员和经理用户存在
+        var adminUser = await EnsureUserAsync("admin", "admin@fluxquant.io", "admin123", "系统管理员", UserRole.Admin, ct);
+        var managerUser = await EnsureUserAsync("manager", "manager@fluxquant.io", "manager123", "项目经理", UserRole.Manager, ct);
+
+        // 2. 检查是否已有项目数据
         if (await _dbContext.Projects.AnyAsync(ct))
         {
-            _logger.LogInformation("数据库已有数据，跳过种子");
+            _logger.LogInformation("项目数据已存在，跳过项目种子");
             return;
         }
 
-        _logger.LogInformation("开始播种测试数据...");
-
-        // 创建用户
-        var admin = new User
-        {
-            Username = "admin",
-            Email = "admin@fluxquant.io",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-            DisplayName = "系统管理员",
-            Role = UserRole.Admin
-        };
-
-        var manager = new User
-        {
-            Username = "manager",
-            Email = "manager@fluxquant.io",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager123"),
-            DisplayName = "项目经理",
-            Role = UserRole.Manager
-        };
-
+        // 3. 创建员工用户
         var employees = new List<User>();
         var employeeNames = new[] { "张三", "李四", "王五", "赵六", "陈七" };
         for (int i = 0; i < employeeNames.Length; i++)
         {
-            employees.Add(new User
-            {
-                Username = $"employee{i + 1}",
-                Email = $"employee{i + 1}@fluxquant.io",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("emp123"),
-                DisplayName = employeeNames[i],
-                Role = UserRole.Employee
-            });
+            var emp = await EnsureUserAsync(
+                $"employee{i + 1}", 
+                $"employee{i + 1}@fluxquant.io", 
+                "emp123", 
+                employeeNames[i], 
+                UserRole.Employee, 
+                ct);
+            employees.Add(emp);
         }
 
-        _dbContext.Users.AddRange([admin, manager, .. employees]);
-        await _dbContext.SaveChangesAsync(ct);
-
-        // 创建项目
+        // 4. 创建项目
         var project = new Project
         {
             Name = "2026年Q1数据处理项目",
@@ -79,7 +63,7 @@ public class SeedService
         _dbContext.Projects.Add(project);
         await _dbContext.SaveChangesAsync(ct);
 
-        // 创建阶段
+        // 5. 创建阶段
         var stages = new[]
         {
             new Stage { ProjectId = project.Id, Name = "数据清洗", Order = 1, Description = "初步清理和格式化" },
@@ -90,7 +74,7 @@ public class SeedService
         _dbContext.Stages.AddRange(stages);
         await _dbContext.SaveChangesAsync(ct);
 
-        // 创建任务池
+        // 6. 创建任务池
         var taskPools = new List<TaskPool>();
         var poolConfigs = new[]
         {
@@ -116,7 +100,7 @@ public class SeedService
         _dbContext.TaskPools.AddRange(taskPools);
         await _dbContext.SaveChangesAsync(ct);
 
-        // 分配任务
+        // 7. 分配任务
         var random = new Random(42);
         var allocations = new List<Allocation>();
 
@@ -152,7 +136,7 @@ public class SeedService
         _dbContext.Allocations.AddRange(allocations);
         await _dbContext.SaveChangesAsync(ct);
 
-        // 生成一些生产日志
+        // 8. 生成一些生产日志
         var logs = new List<ProductionLog>();
         var exclusionReasons = new[] { "源文件损坏", "数据重复", "信息缺失", "无法辨认" };
 
@@ -188,5 +172,40 @@ public class SeedService
         _logger.LogInformation(
             "测试数据播种完成: {Users}用户, {Projects}项目, {Stages}阶段, {Pools}任务池, {Allocations}分配, {Logs}日志",
             2 + employees.Count, 1, stages.Length, taskPools.Count, allocations.Count, logs.Count);
+    }
+
+    /// <summary>
+    /// 确保用户存在，不存在则创建
+    /// </summary>
+    private async Task<User> EnsureUserAsync(
+        string username, 
+        string email, 
+        string password, 
+        string displayName, 
+        UserRole role, 
+        CancellationToken ct)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username, ct);
+        
+        if (user != null)
+        {
+            _logger.LogInformation("用户已存在: {Username}", username);
+            return user;
+        }
+
+        user = new User
+        {
+            Username = username,
+            Email = email,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+            DisplayName = displayName,
+            Role = role
+        };
+
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync(ct);
+        
+        _logger.LogInformation("创建用户: {Username} ({Role})", username, role);
+        return user;
     }
 }

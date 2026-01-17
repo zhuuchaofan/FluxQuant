@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Zap, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { loginAction, registerAction } from "@/lib/actions/auth";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
   
@@ -40,7 +39,7 @@ function LoginForm() {
         
         if (result.success) {
           toast.success("注册成功！正在跳转...");
-          router.push("/my-stream");
+          window.location.href = "/my-stream";
         } else {
           toast.error(result.error || "注册失败");
         }
@@ -52,7 +51,8 @@ function LoginForm() {
         
         if (result.success) {
           toast.success("登录成功！正在跳转...");
-          router.push("/my-stream");
+          // 使用 window.location 确保浏览器刷新获取 Cookie
+          window.location.href = "/my-stream";
         } else {
           toast.error(result.error || "登录失败");
         }
