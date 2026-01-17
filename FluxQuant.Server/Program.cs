@@ -52,6 +52,8 @@ try
 
     // 业务服务
     builder.Services.AddScoped<FluxQuant.Server.Features.Auth.AuthService>();
+    builder.Services.AddScoped<FluxQuant.Server.Features.MyStream.MyStreamService>();
+    builder.Services.AddScoped<FluxQuant.Server.Features.Report.ReportService>();
 
     // Carter (Minimal API 路由)
     builder.Services.AddCarter();
