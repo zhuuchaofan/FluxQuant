@@ -1,19 +1,36 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { type LoginRequest, type RegisterRequest, type AuthResponse, type UserDto } from "@/lib/types";
+import { 
+  registerSchema, 
+  loginSchema, 
+  type AuthResponse, 
+  type UserDto 
+} from "@/lib/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555";
 
 /**
  * 用户注册 Server Action
+ * @param data 未验证的输入数据
  */
-export async function registerAction(data: RegisterRequest) {
+export async function registerAction(data: unknown) {
+  // Zod 运行时验证
+  const parsed = registerSchema.safeParse(data);
+  if (!parsed.success) {
+    return { 
+      success: false, 
+      error: parsed.error.issues[0]?.message || "参数验证失败" 
+    };
+  }
+
+  const validData = parsed.data;
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(validData),
     });
 
     if (!response.ok) {
@@ -32,7 +49,7 @@ export async function registerAction(data: RegisterRequest) {
         const cookieStore = await cookies();
         cookieStore.set("fluxquant_token", match[1], {
           httpOnly: true,
-          secure: false,
+          secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
           maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -48,13 +65,25 @@ export async function registerAction(data: RegisterRequest) {
 
 /**
  * 用户登录 Server Action
+ * @param data 未验证的输入数据
  */
-export async function loginAction(data: LoginRequest) {
+export async function loginAction(data: unknown) {
+  // Zod 运行时验证
+  const parsed = loginSchema.safeParse(data);
+  if (!parsed.success) {
+    return { 
+      success: false, 
+      error: parsed.error.issues[0]?.message || "参数验证失败" 
+    };
+  }
+
+  const validData = parsed.data;
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(validData),
     });
 
     if (!response.ok) {
@@ -72,7 +101,7 @@ export async function loginAction(data: LoginRequest) {
         const cookieStore = await cookies();
         cookieStore.set("fluxquant_token", match[1], {
           httpOnly: true,
-          secure: false,
+          secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
           maxAge: 60 * 60 * 24 * 7,

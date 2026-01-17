@@ -218,7 +218,26 @@ int effectiveTotal = currentTotal - totalExcluded;
 - 场景: 矩阵视图需要加载 50 个任务 \* 10 个人的实时数据。
 - 方案: 在 Allocations 表中维护 CurrentValid 快照字段。每次插入 Log 时，原子性更新 Allocation 表，读的时候直接读 Allocation，避免 Sum(Logs)。
 
-**8.** **总结**
+**8.** **安全加固与验证策略**
+
+**8.1** **前端运行时验证**
+
+- **机制**: 所有 Server Actions 入口强制执行 Zod Schema 校验。
+- **目的**: 防止绕过前端 UI 的恶意请求，确保数据类型安全。
+- **实践**:
+  - `registerAction` / `loginAction`: 校验用户名格式、密码强度。
+  - `adjustQuotaAction`: 校验 Reason 必填，NewQuota 非负。
+  - `submitReportAction`: 校验日期格式和数值范围。
+
+**8.2** **后端单元测试**
+
+- **项目**: `FluxQuant.Tests` (xUnit + Moq + InMemoryDb)。
+- **策略**:
+  - **核心服务**: AuthService (注册/登录逻辑), MatrixService (配额分配/计算逻辑) 必须 100% 覆盖。
+  - **快速反馈**: 使用内存数据库进行无副作用的快速测试。
+  - **边界测试**: 重点测试配额超限、用户禁用、重复分配等异常场景。
+
+**9.** **总结**
 
 **FluxQuant** 不仅仅是一个记录工具，它是一套**生产力量化方法论**。
 

@@ -3,18 +3,22 @@
 import { cookies } from "next/headers";
 import type {
   ProjectDetailDto,
-  CreateProjectRequest,
-  UpdateProjectRequest,
   StageDto,
-  CreateStageRequest,
-  UpdateStageRequest,
   TaskPoolDto,
-  CreateTaskPoolRequest,
-  UpdateTaskPoolRequest,
   UserListDto,
-  CreateUserRequest,
-  UpdateUserRequest,
 } from "@/components/features/admin/types";
+import {
+  createProjectSchema,
+  updateProjectSchema,
+  createStageSchema,
+  updateStageSchema,
+  createTaskPoolSchema,
+  updateTaskPoolSchema,
+  createUserSchema,
+  updateUserSchema,
+  resetPasswordSchema,
+  idParamSchema,
+} from "@/lib/validations/admin";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555";
 
@@ -58,75 +62,133 @@ export async function getAllProjectsAction() {
   return await authFetch<ProjectDetailDto[]>("/api/v1/admin/projects/all");
 }
 
-export async function getProjectByIdAction(id: number) {
-  return await authFetch<ProjectDetailDto>(`/api/v1/admin/projects/${id}`);
+export async function getProjectByIdAction(id: unknown) {
+  const parsed = idParamSchema.safeParse(id);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<ProjectDetailDto>(`/api/v1/admin/projects/${parsed.data}`);
 }
 
-export async function createProjectAction(request: CreateProjectRequest) {
+export async function createProjectAction(request: unknown) {
+  const parsed = createProjectSchema.safeParse(request);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
   return await authFetch<ProjectDetailDto>("/api/v1/admin/projects", {
     method: "POST",
-    body: JSON.stringify(request),
+    body: JSON.stringify(parsed.data),
   });
 }
 
-export async function updateProjectAction(id: number, request: UpdateProjectRequest) {
-  return await authFetch<ProjectDetailDto>(`/api/v1/admin/projects/${id}`, {
+export async function updateProjectAction(id: unknown, request: unknown) {
+  const idParsed = idParamSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { success: false, error: idParsed.error.issues[0]?.message || "ID验证失败" };
+  }
+  const dataParsed = updateProjectSchema.safeParse(request);
+  if (!dataParsed.success) {
+    return { success: false, error: dataParsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<ProjectDetailDto>(`/api/v1/admin/projects/${idParsed.data}`, {
     method: "PUT",
-    body: JSON.stringify(request),
+    body: JSON.stringify(dataParsed.data),
   });
 }
 
-export async function deleteProjectAction(id: number) {
-  return await authFetch<void>(`/api/v1/admin/projects/${id}`, {
+export async function deleteProjectAction(id: unknown) {
+  const parsed = idParamSchema.safeParse(id);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<void>(`/api/v1/admin/projects/${parsed.data}`, {
     method: "DELETE",
   });
 }
 
 // ==================== 阶段管理 ====================
 
-export async function createStageAction(request: CreateStageRequest) {
+export async function createStageAction(request: unknown) {
+  const parsed = createStageSchema.safeParse(request);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
   return await authFetch<StageDto>("/api/v1/admin/stages", {
     method: "POST",
-    body: JSON.stringify(request),
+    body: JSON.stringify(parsed.data),
   });
 }
 
-export async function updateStageAction(id: number, request: UpdateStageRequest) {
-  return await authFetch<StageDto>(`/api/v1/admin/stages/${id}`, {
+export async function updateStageAction(id: unknown, request: unknown) {
+  const idParsed = idParamSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { success: false, error: idParsed.error.issues[0]?.message || "ID验证失败" };
+  }
+  const dataParsed = updateStageSchema.safeParse(request);
+  if (!dataParsed.success) {
+    return { success: false, error: dataParsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<StageDto>(`/api/v1/admin/stages/${idParsed.data}`, {
     method: "PUT",
-    body: JSON.stringify(request),
+    body: JSON.stringify(dataParsed.data),
   });
 }
 
-export async function deleteStageAction(id: number) {
-  return await authFetch<void>(`/api/v1/admin/stages/${id}`, {
+export async function deleteStageAction(id: unknown) {
+  const parsed = idParamSchema.safeParse(id);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<void>(`/api/v1/admin/stages/${parsed.data}`, {
     method: "DELETE",
   });
 }
 
 // ==================== 任务池管理 ====================
 
-export async function getTaskPoolsAction(stageId?: number) {
-  const url = stageId ? `/api/v1/admin/pools?stageId=${stageId}` : "/api/v1/admin/pools";
-  return await authFetch<TaskPoolDto[]>(url);
+export async function getTaskPoolsAction(stageId?: unknown) {
+  if (stageId !== undefined) {
+    const parsed = idParamSchema.safeParse(stageId);
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+    }
+    return await authFetch<TaskPoolDto[]>(`/api/v1/admin/pools?stageId=${parsed.data}`);
+  }
+  return await authFetch<TaskPoolDto[]>("/api/v1/admin/pools");
 }
 
-export async function createTaskPoolAction(request: CreateTaskPoolRequest) {
+export async function createTaskPoolAction(request: unknown) {
+  const parsed = createTaskPoolSchema.safeParse(request);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
   return await authFetch<TaskPoolDto>("/api/v1/admin/pools", {
     method: "POST",
-    body: JSON.stringify(request),
+    body: JSON.stringify(parsed.data),
   });
 }
 
-export async function updateTaskPoolAction(id: number, request: UpdateTaskPoolRequest) {
-  return await authFetch<TaskPoolDto>(`/api/v1/admin/pools/${id}`, {
+export async function updateTaskPoolAction(id: unknown, request: unknown) {
+  const idParsed = idParamSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { success: false, error: idParsed.error.issues[0]?.message || "ID验证失败" };
+  }
+  const dataParsed = updateTaskPoolSchema.safeParse(request);
+  if (!dataParsed.success) {
+    return { success: false, error: dataParsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<TaskPoolDto>(`/api/v1/admin/pools/${idParsed.data}`, {
     method: "PUT",
-    body: JSON.stringify(request),
+    body: JSON.stringify(dataParsed.data),
   });
 }
 
-export async function deleteTaskPoolAction(id: number) {
-  return await authFetch<void>(`/api/v1/admin/pools/${id}`, {
+export async function deleteTaskPoolAction(id: unknown) {
+  const parsed = idParamSchema.safeParse(id);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<void>(`/api/v1/admin/pools/${parsed.data}`, {
     method: "DELETE",
   });
 }
@@ -137,29 +199,53 @@ export async function getUsersAction() {
   return await authFetch<UserListDto[]>("/api/v1/admin/users");
 }
 
-export async function createUserAction(request: CreateUserRequest) {
+export async function createUserAction(request: unknown) {
+  const parsed = createUserSchema.safeParse(request);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
   return await authFetch<UserListDto>("/api/v1/admin/users", {
     method: "POST",
-    body: JSON.stringify(request),
+    body: JSON.stringify(parsed.data),
   });
 }
 
-export async function updateUserAction(id: number, request: UpdateUserRequest) {
-  return await authFetch<UserListDto>(`/api/v1/admin/users/${id}`, {
+export async function updateUserAction(id: unknown, request: unknown) {
+  const idParsed = idParamSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { success: false, error: idParsed.error.issues[0]?.message || "ID验证失败" };
+  }
+  const dataParsed = updateUserSchema.safeParse(request);
+  if (!dataParsed.success) {
+    return { success: false, error: dataParsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<UserListDto>(`/api/v1/admin/users/${idParsed.data}`, {
     method: "PUT",
-    body: JSON.stringify(request),
+    body: JSON.stringify(dataParsed.data),
   });
 }
 
-export async function resetPasswordAction(id: number, newPassword: string) {
-  return await authFetch<{ message: string }>(`/api/v1/admin/users/${id}/reset-password`, {
+export async function resetPasswordAction(id: unknown, newPassword: unknown) {
+  const idParsed = idParamSchema.safeParse(id);
+  if (!idParsed.success) {
+    return { success: false, error: idParsed.error.issues[0]?.message || "ID验证失败" };
+  }
+  const dataParsed = resetPasswordSchema.safeParse({ newPassword });
+  if (!dataParsed.success) {
+    return { success: false, error: dataParsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<{ message: string }>(`/api/v1/admin/users/${idParsed.data}/reset-password`, {
     method: "POST",
-    body: JSON.stringify({ newPassword }),
+    body: JSON.stringify(dataParsed.data),
   });
 }
 
-export async function deleteUserAction(id: number) {
-  return await authFetch<void>(`/api/v1/admin/users/${id}`, {
+export async function deleteUserAction(id: unknown) {
+  const parsed = idParamSchema.safeParse(id);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<void>(`/api/v1/admin/users/${parsed.data}`, {
     method: "DELETE",
   });
 }

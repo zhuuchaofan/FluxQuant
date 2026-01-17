@@ -6,11 +6,14 @@ import type {
   ProjectListDto, 
   MatrixCellDto,
   MatrixRowDto,
-  CreateAllocationRequest,
-  UpdateAllocationRequest,
-  AdjustQuotaRequest,
   MatrixUserDto
 } from "@/components/features/matrix/types";
+import {
+  createAllocationSchema,
+  updateAllocationSchema,
+  adjustQuotaSchema,
+  idParamSchema,
+} from "@/lib/validations/matrix";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555";
 
@@ -54,39 +57,60 @@ export async function getProjectsAction() {
 /**
  * 获取矩阵数据
  */
-export async function getMatrixDataAction(projectId: number) {
-  return await authFetch<MatrixDataDto>(`/api/v1/admin/matrix/${projectId}`);
+export async function getMatrixDataAction(projectId: unknown) {
+  const parsed = idParamSchema.safeParse(projectId);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<MatrixDataDto>(`/api/v1/admin/matrix/${parsed.data}`);
 }
 
 /**
  * 创建分配
  */
-export async function createAllocationAction(request: CreateAllocationRequest) {
+export async function createAllocationAction(request: unknown) {
+  const parsed = createAllocationSchema.safeParse(request);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
   return await authFetch<MatrixCellDto>("/api/v1/admin/allocations", {
     method: "POST",
-    body: JSON.stringify(request),
+    body: JSON.stringify(parsed.data),
   });
 }
 
 /**
  * 更新分配额度
  */
-export async function updateAllocationAction(allocationId: number, newQuota: number) {
-  const request: UpdateAllocationRequest = { allocationId, newTargetQuota: newQuota };
-  return await authFetch<MatrixCellDto>(`/api/v1/admin/allocations/${allocationId}`, {
+export async function updateAllocationAction(allocationId: unknown, newQuota: unknown) {
+  const idParsed = idParamSchema.safeParse(allocationId);
+  if (!idParsed.success) {
+    return { success: false, error: idParsed.error.issues[0]?.message || "分配ID验证失败" };
+  }
+  const quotaParsed = updateAllocationSchema.safeParse({ 
+    allocationId: idParsed.data, 
+    newTargetQuota: newQuota 
+  });
+  if (!quotaParsed.success) {
+    return { success: false, error: quotaParsed.error.issues[0]?.message || "配额验证失败" };
+  }
+  return await authFetch<MatrixCellDto>(`/api/v1/admin/allocations/${quotaParsed.data.allocationId}`, {
     method: "PATCH",
-    body: JSON.stringify(request),
+    body: JSON.stringify(quotaParsed.data),
   });
 }
 
 /**
  * 调整任务池配额
  */
-export async function adjustQuotaAction(taskPoolId: number, newQuota: number, reason: string) {
-  const request: AdjustQuotaRequest = { taskPoolId, newQuota, reason };
-  return await authFetch<MatrixRowDto>(`/api/v1/admin/pools/${taskPoolId}/quota`, {
+export async function adjustQuotaAction(taskPoolId: unknown, newQuota: unknown, reason: unknown) {
+  const parsed = adjustQuotaSchema.safeParse({ taskPoolId, newQuota, reason });
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<MatrixRowDto>(`/api/v1/admin/pools/${parsed.data.taskPoolId}/quota`, {
     method: "PATCH",
-    body: JSON.stringify(request),
+    body: JSON.stringify(parsed.data),
   });
 }
 
@@ -108,8 +132,12 @@ interface AllocationToggleDto {
 /**
  * 禁用/启用分配
  */
-export async function toggleAllocationAction(allocationId: number) {
-  return await authFetch<AllocationToggleDto>(`/api/v1/admin/allocations/${allocationId}/toggle`, {
+export async function toggleAllocationAction(allocationId: unknown) {
+  const parsed = idParamSchema.safeParse(allocationId);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message || "参数验证失败" };
+  }
+  return await authFetch<AllocationToggleDto>(`/api/v1/admin/allocations/${parsed.data}/toggle`, {
     method: "PATCH",
   });
 }

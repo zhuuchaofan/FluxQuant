@@ -143,7 +143,9 @@ fluxquant-client/
 
 - **Naming**: `PascalCase` for public members. `_camelCase` for private fields.
 - **Async**: `await` everything. Use `CancellationToken` in arguments.
-- **Validation**: Use `FluentValidation` if DTOs are complex.
+- **Validation**:
+  - **Input Validation**: Use `FluentValidation` for complex DTOs appropriately.
+  - **Business Rules**: Check in Service layer (Result Pattern).
 - **Endpoints (Minimal API)**:
   ```csharp
   public class CreatePoolEndpoint : ICarterModule
@@ -158,26 +160,43 @@ fluxquant-client/
   }
   ```
 
-### 2.2 Frontend (TSX)
+### 2.3 Frontend (TSX)
 
 - **Naming**: `PascalCase` for Components. `useCamelCase` for Hooks. `camelCase` for props.
-- **Safety**: No `any`. Zod for all form inputs.
+- **Safety**:
+  - **No `any`**.
+  - **Zod Validation**: ALL Server Actions MUST validate input using `zod.safeParse()` before processing.
+  - **Shared Schemas**: Store schemas in `lib/validations/*.ts` to be reusable.
 - **Server Actions**:
 
   ```typescript
   // actions/production.ts
-  'use server'
-  export async function reportProgress(id: number, amount: number) {
-      // 1. Validate
-      // 2. Call Backend API (or DB direct if unified) -> In this case, Call .NET API?
-      // WAIT. We have a separate .NET Backend.
-      // So Next.js Server Actions act as a Proxy/BFF to .NET API.
+  "use server";
+  import { reportSchema } from "@/lib/validations/report";
 
-      const res = await fetch(`${API_URL}/allocations/${id}/report`, { ... });
-      if (!res.ok) throw new Error("Failed");
-      revalidateTag('allocations');
+  export async function reportProgress(data: unknown) {
+    // 1. Validate
+    const parsed = reportSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message };
+    }
+
+    // 2. Call Backend API
+    const res = await fetch(`${API_URL}/allocations/report`, {
+      body: JSON.stringify(parsed.data),
+    });
+    // ...
   }
   ```
+
+### 2.4 Testing Standards
+
+- **Backend**:
+  - **Project**: `FluxQuant.Tests` (xUnit).
+  - **Coverage**: Core Services (Auth, Matrix) MUST be covered.
+  - **Fixtures**: Use `InMemoryDbContextFactory` for fast isolation testing.
+- **Frontend**:
+  - **Lint**: `npm run lint` must pass 0 errors.
 
 ## 3. Workflow Rules
 
