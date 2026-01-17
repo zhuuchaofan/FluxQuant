@@ -57,9 +57,6 @@ public class FluxQuantDbContext : DbContext
         modelBuilder.Entity<TaskPool>(entity =>
         {
             entity.Property(t => t.Name).HasMaxLength(200);
-            // 并发控制 - PostgreSQL 使用 xmin 系统列
-            entity.Property(t => t.RowVersion)
-                .IsRowVersion();
             
             entity.HasOne(t => t.Stage)
                 .WithMany(s => s.TaskPools)

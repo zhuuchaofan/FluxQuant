@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,10 +93,9 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
         </thead>
         <tbody>
           {data.stages.map((stage) => (
-            <>
+            <Fragment key={`stage-${stage.stageId}`}>
               {/* Stage Header Row */}
               <tr
-                key={`stage-${stage.stageId}`}
                 className="bg-zinc-800/50 cursor-pointer hover:bg-zinc-800"
                 onClick={() => toggleStage(stage.stageId)}
               >
@@ -150,7 +149,7 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
                     }
                   />
                 ))}
-            </>
+            </Fragment>
           ))}
         </tbody>
       </table>

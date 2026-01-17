@@ -25,11 +25,6 @@ public class TaskPool
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
-    /// <summary>
-    /// PostgreSQL 并发控制令牌 (xmin)
-    /// </summary>
-    public uint RowVersion { get; set; }
-    
     // 导航属性
     public Stage Stage { get; set; } = null!;
     public ICollection<Allocation> Allocations { get; set; } = [];

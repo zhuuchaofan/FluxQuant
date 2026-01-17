@@ -1,6 +1,6 @@
 "use server";
 
-import { apiGet, apiPost, apiPatch } from "@/lib/api";
+import { cookies } from "next/headers";
 import type { 
   MatrixDataDto, 
   ProjectListDto, 
@@ -12,25 +12,60 @@ import type {
   MatrixUserDto
 } from "@/components/features/matrix/types";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555";
+
+async function authFetch<T>(path: string, options: RequestInit = {}): Promise<{ success: boolean; data?: T; error?: string }> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("fluxquant_token")?.value;
+    
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      return { success: false, error: error.error || `请求失败: ${response.status}` };
+    }
+
+    if (response.status === 204) {
+      return { success: true };
+    }
+
+    const data: T = await response.json();
+    return { success: true, data };
+  } catch {
+    return { success: false, error: "网络错误" };
+  }
+}
+
 /**
  * 获取项目列表
  */
 export async function getProjectsAction() {
-  return await apiGet<ProjectListDto[]>("/api/v1/admin/projects");
+  return await authFetch<ProjectListDto[]>("/api/v1/admin/projects");
 }
 
 /**
  * 获取矩阵数据
  */
 export async function getMatrixDataAction(projectId: number) {
-  return await apiGet<MatrixDataDto>(`/api/v1/admin/matrix/${projectId}`);
+  return await authFetch<MatrixDataDto>(`/api/v1/admin/matrix/${projectId}`);
 }
 
 /**
  * 创建分配
  */
 export async function createAllocationAction(request: CreateAllocationRequest) {
-  return await apiPost<MatrixCellDto>("/api/v1/admin/allocations", request);
+  return await authFetch<MatrixCellDto>("/api/v1/admin/allocations", {
+    method: "POST",
+    body: JSON.stringify(request),
+  });
 }
 
 /**
@@ -38,7 +73,10 @@ export async function createAllocationAction(request: CreateAllocationRequest) {
  */
 export async function updateAllocationAction(allocationId: number, newQuota: number) {
   const request: UpdateAllocationRequest = { allocationId, newTargetQuota: newQuota };
-  return await apiPatch<MatrixCellDto>(`/api/v1/admin/allocations/${allocationId}`, request);
+  return await authFetch<MatrixCellDto>(`/api/v1/admin/allocations/${allocationId}`, {
+    method: "PATCH",
+    body: JSON.stringify(request),
+  });
 }
 
 /**
@@ -46,12 +84,15 @@ export async function updateAllocationAction(allocationId: number, newQuota: num
  */
 export async function adjustQuotaAction(taskPoolId: number, newQuota: number, reason: string) {
   const request: AdjustQuotaRequest = { taskPoolId, newQuota, reason };
-  return await apiPatch<MatrixRowDto>(`/api/v1/admin/pools/${taskPoolId}/quota`, request);
+  return await authFetch<MatrixRowDto>(`/api/v1/admin/pools/${taskPoolId}/quota`, {
+    method: "PATCH",
+    body: JSON.stringify(request),
+  });
 }
 
 /**
  * 获取员工列表
  */
 export async function getEmployeesAction() {
-  return await apiGet<MatrixUserDto[]>("/api/v1/admin/employees");
+  return await authFetch<MatrixUserDto[]>("/api/v1/admin/employees");
 }
