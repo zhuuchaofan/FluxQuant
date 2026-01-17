@@ -4,34 +4,32 @@
 
 ## 1. System Architecture
 
-### 1.1 Backend: .NET 10 Web API (MCSD Pattern)
+### 1.1 Backend: .NET 10 Web API (Minimal API / REPR)
 
-We follow a strict **Layered Architecture** (Model-Controller-Service-DTO).
+We follow the **REPR (Request-Endpoint-Response)** Pattern using Minimal APIs.
 
 ```
 FluxQuant.Server/
-├── Controllers/            # [C] API Endpoints (Thin)
-├── Services/               # [S] Business Logic
-│   ├── Interfaces/         # IService definitions
-│   └── Implementations/    # Service logic
-├── Models/                 # [M] Domain Entities (EF Core)
-├── DTOs/                   # [D] Data Transfer Objects (Records)
-├── Infrastructure/         # DBContext, Logging, External APIs
-└── Program.cs              # DI & Middleware
+├── Features/               # Vertical Slices
+│   ├── Production/         # Feature
+│   │   ├── CreatePool/     # Slice
+│   │   │   ├── Endpoint.cs # Minimal API MapGroup
+│   │   │   ├── Request.cs  # DTO
+│   │   │   └── Service.cs  # Business Logic
+├── Domain/                 # Entities
+├── Infrastructure/         # DbContext, External
+└── Program.cs
 ```
 
 **Key Decisions**:
 
-- **DTOs**: MUST be `public record` types for immutability and conciseness.
-  ```csharp
-  public record CreatePoolRequest(string Name, int TotalQuota);
-  ```
-- **Controllers**:
-  - Attribute-based routing (`[ApiController]`, `[Route("api/v1/[controller]")]`).
-  - NO business logic. Only validation, service call, and mapping to HTTP response.
+- **Endpoints**: Use `app.MapGroup("/api/v1/pools")` in strictly typed Endpoint classes.
+- **No Controllers**: Completely remove `Controllers/` folder.
+- **DTOs**: `public record` types co-located with Endpoints or in `Shared/DTOs`.
 - **Services**:
   - Return `Task<T>` or `Result<T>`.
   - Handle all business rules.
+  - **Transactions**: Multi-table updates (e.g., Log + Snapshot) MUST be wrapped in `using var transaction = _dbContext.Database.BeginTransaction()`.
 - **Documentation**:
   - **Swagger (OpenAPI)** is mandatory.
   - All public APIs must have XML comments (`/// <summary>`).
@@ -80,7 +78,8 @@ fluxquant-client/
 
 - **Backend**:
   - **Unit Tests**: `FluxQuant.Server.Tests` (xUnit + FluentAssertions + NSubstitute).
-  - **Integration Tests**: `FluxQuant.Server.IntegrationTests` (TestServer + Sqlite In-Memory).
+  - **Integration Tests**: `FluxQuant.Server.IntegrationTests` using **Testcontainers**.
+    - **Rule**: No SQLite In-Memory. Must use real PostgreSQL container to ensure 100% environment parity.
 - **Frontend**:
   - **Unit**: Vitest + React Testing Library.
   - **E2E**: Playwright (covering critical flows like "Report Progress").
@@ -93,6 +92,31 @@ fluxquant-client/
   1. Backend updates DTO.
   2. CI/Dev runs `npm run api:sync`.
   3. Frontend gets compile error if fields missing.
+
+### 1.5 Global Error Handling
+
+- **Standard**: RFC 7807 `ProblemDetails`.
+- **Backend**: Use `app.UseExceptionHandler()` to Map Exceptions -> ProblemDetails.
+- **Frontend**: Server Actions must catch non-2xx responses and throw structured errors or return `{ success: false, error: ... }`.
+
+### 1.6 BFF Authentication Flow
+
+- **Next.js -> .NET**: 必须透传 Auth Token。
+
+  ```typescript
+  import { cookies } from "next/headers";
+
+  export async function callApi(path: string) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+
+    return fetch(`${API_URL}${path}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+  ```
 
 ---
 
@@ -120,13 +144,18 @@ fluxquant-client/
 - **Naming**: `PascalCase` for public members. `_camelCase` for private fields.
 - **Async**: `await` everything. Use `CancellationToken` in arguments.
 - **Validation**: Use `FluentValidation` if DTOs are complex.
-- **Endpoints**:
+- **Endpoints (Minimal API)**:
   ```csharp
-  // Example
-  app.MapPost("/", async (CreatePoolRequest req, PoolService service) => {
-      var result = await service.CreateAsync(req);
-      return result.Match(TypedResults.Ok, TypedResults.BadRequest);
-  });
+  public class CreatePoolEndpoint : ICarterModule
+  {
+      public void AddRoutes(IEndpointRouteBuilder app)
+      {
+          app.MapPost("/api/v1/pools", async (CreatePoolRequest req, PoolService service) => {
+              var result = await service.CreateAsync(req);
+              return result.Match(TypedResults.Ok, TypedResults.BadRequest);
+          });
+      }
+  }
   ```
 
 ### 2.2 Frontend (TSX)

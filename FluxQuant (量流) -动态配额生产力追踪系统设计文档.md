@@ -4,7 +4,7 @@
 
 日期: 2026-01-17
 
-技术栈: .NET 10 (Web API) + Next.js 15 (App Router/Server Actions) + SignalR (Admin Only)
+技术栈: .NET 10 (Web API) + Next.js 15 (App Router/Server Actions) + Postgres + React Query (Polling)
 
 **1.** **项目愿景与核心理念** **(Vision & Philosophy)**
 
@@ -123,18 +123,27 @@ Name NVARCHAR(100),
 CurrentTotalQuota INT, -- 当前总量（可变）
 RowVersion TIMESTAMP -- 用于并发控制的乐观锁
 );
+-- Constraint: 写入 `ProductionLogs` 与更新 `Allocations` **必须**在同一个数据库事务 (Transaction) 中完成，确保数据强一致性。
+
+-- 团队/组织 (New: Audit Item 1)
+CREATE TABLE Teams (
+Id INT PRIMARY KEY,
+Name NVARCHAR(50),
+ManagerId INT
+);
 
 -- 分配关系
 CREATE TABLE Allocations (
 Id INT PRIMARY KEY,
 TaskPoolId INT,
-UserId INT,
+UserId INT NULL, -- [Modified: Audit Item 4] 允许为空，支持“抢单模式”或“公共池”
+TeamId INT NULL, -- [New] 可选绑定团队
 TargetQuota INT, -- 分配目标
 CurrentValid INT, -- [快照] 当前有效产出
 CurrentExcluded INT -- [快照] 当前除外量
 );
 
-**5.2** **动态流水表** **(\*\***系统的核心\***\*)**
+**5.2 动态流水表 (系统的核心)**
 
 -- 生产日志 (记录每一次填报)
 CREATE TABLE ProductionLogs (
@@ -188,6 +197,15 @@ int effectiveTotal = currentTotal - totalExcluded;
 2. **Action**: 遍历所有活跃 Project。
 3. **Save**: 将当天的 Sum(Valid) 和 Sum(Excluded) 存入 DailyProjectStats 表。
 4. **Purpose**: 前端查询历史曲线时，直接读 Stats 表，无需回溯计算数百万条 Log。
+
+**6.3** **数据一致性对账** **(Reconciliation Job)**
+
+- **触发**: 每晚 03:00 (错峰执行)。
+- **逻辑**:
+  - 重新计算 `Sum(ProductionLogs.Valid)` where `AllocationId = X`。
+  - 对比 `Allocations.CurrentValid`。
+  - 若不一致 -> 触发 `DataDriftAlert` 并自动修复快照值。
+- **价值**: 作为“双写”模式的最终兜底机制 (Safety Net)。
 
 **7.** **技术实现难点预案**
 
