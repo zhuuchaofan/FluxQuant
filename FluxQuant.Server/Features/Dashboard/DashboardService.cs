@@ -57,6 +57,9 @@ public class DashboardService
 
         // 异常任务池
         var anomalousCount = await GetAnomalousPoolCountAsync(ct);
+        
+        // 异常分配（员工级别）
+        var allocationAnomalies = await GetAllocationAnomaliesAsync(5, ct);
 
         // 最近活动
         var recentActivities = await GetRecentActivitiesAsync(10, ct);
@@ -77,9 +80,11 @@ public class DashboardService
             TodayExcludedOutput = todayLogs?.ExcludedSum ?? 0,
             OverallProgress = overallProgress,
             AnomalousPoolCount = anomalousCount,
+            AnomalousAllocationCount = allocationAnomalies.Count,
             RecentActivities = recentActivities,
             DailyTrends = dailyTrends,
-            AnomalyHotspots = anomalyHotspots
+            AnomalyHotspots = anomalyHotspots,
+            AllocationAnomalies = allocationAnomalies
         };
     }
 
@@ -98,6 +103,63 @@ public class DashboardService
             var rate = (decimal)totalExcluded / t.TotalQuota * 100;
             return rate > 10;
         });
+    }
+
+    private async Task<List<AllocationAnomalyDto>> GetAllocationAnomaliesAsync(int count, CancellationToken ct)
+    {
+        // 获取所有分配及其相关信息
+        var allocations = await _dbContext.Allocations
+            .AsNoTracking()
+            .Include(a => a.User)
+            .Include(a => a.TaskPool)
+                .ThenInclude(t => t.Stage)
+                    .ThenInclude(s => s.Project)
+            .Include(a => a.Logs)
+            .Where(a => a.IsActive && a.UserId != null)
+            .ToListAsync(ct);
+
+        // 筛选异常分配：除外率 > 10% 且已处理 > 50
+        var anomalies = allocations
+            .Select(a =>
+            {
+                var totalProcessed = a.CurrentValid + a.CurrentExcluded;
+                var rate = totalProcessed > 0 
+                    ? Math.Round((decimal)a.CurrentExcluded / totalProcessed * 100, 1) 
+                    : 0;
+
+                // 找出最常见的除外原因
+                var topReason = a.Logs
+                    .Where(l => l.ExcludedQty > 0 && !string.IsNullOrEmpty(l.ExclusionReason))
+                    .GroupBy(l => l.ExclusionReason)
+                    .OrderByDescending(g => g.Sum(l => l.ExcludedQty))
+                    .FirstOrDefault()?.Key ?? "未知";
+
+                return new
+                {
+                    Allocation = a,
+                    TotalProcessed = totalProcessed,
+                    Rate = rate,
+                    TopReason = topReason
+                };
+            })
+            .Where(x => x.TotalProcessed > 50 && x.Rate > 10)
+            .OrderByDescending(x => x.Rate)
+            .Take(count)
+            .Select(x => new AllocationAnomalyDto
+            {
+                AllocationId = x.Allocation.Id,
+                UserName = x.Allocation.User?.DisplayName ?? x.Allocation.User?.Username ?? "未知",
+                TaskPoolName = x.Allocation.TaskPool.Name,
+                ProjectName = x.Allocation.TaskPool.Stage.Project.Name,
+                TargetQuota = x.Allocation.TargetQuota,
+                CurrentValid = x.Allocation.CurrentValid,
+                CurrentExcluded = x.Allocation.CurrentExcluded,
+                ExclusionRate = x.Rate,
+                TopReason = x.TopReason
+            })
+            .ToList();
+
+        return anomalies;
     }
 
     private async Task<List<RecentActivityDto>> GetRecentActivitiesAsync(int count, CancellationToken ct)

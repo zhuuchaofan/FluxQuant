@@ -29,6 +29,18 @@ export interface AnomalyHotspotDto {
   topReason: string;
 }
 
+export interface AllocationAnomalyDto {
+  allocationId: number;
+  userName: string;
+  taskPoolName: string;
+  projectName: string;
+  targetQuota: number;
+  currentValid: number;
+  currentExcluded: number;
+  exclusionRate: number;
+  topReason: string;
+}
+
 export interface DashboardStatsDto {
   activeProjects: number;
   totalTaskPools: number;
@@ -38,7 +50,9 @@ export interface DashboardStatsDto {
   todayExcludedOutput: number;
   overallProgress: number;
   anomalousPoolCount: number;
+  anomalousAllocationCount: number;
   recentActivities: RecentActivityDto[];
   dailyTrends: DailyTrendDto[];
   anomalyHotspots: AnomalyHotspotDto[];
+  allocationAnomalies: AllocationAnomalyDto[];
 }

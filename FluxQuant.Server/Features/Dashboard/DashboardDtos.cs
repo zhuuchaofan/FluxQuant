@@ -29,14 +29,20 @@ public record DashboardStatsDto
     /// <summary>异常任务池数量（除外率>10%）</summary>
     public int AnomalousPoolCount { get; init; }
     
+    /// <summary>异常分配数量（员工除外率>10%）</summary>
+    public int AnomalousAllocationCount { get; init; }
+    
     /// <summary>最近活动</summary>
     public List<RecentActivityDto> RecentActivities { get; init; } = [];
     
     /// <summary>每日趋势（最近7天）</summary>
     public List<DailyTrendDto> DailyTrends { get; init; } = [];
     
-    /// <summary>异常热点</summary>
+    /// <summary>异常热点（任务池级别）</summary>
     public List<AnomalyHotspotDto> AnomalyHotspots { get; init; } = [];
+    
+    /// <summary>异常分配（员工级别）</summary>
+    public List<AllocationAnomalyDto> AllocationAnomalies { get; init; } = [];
 }
 
 /// <summary>
@@ -64,7 +70,7 @@ public record DailyTrendDto
 }
 
 /// <summary>
-/// 异常热点 DTO
+/// 异常热点 DTO（任务池级别）
 /// </summary>
 public record AnomalyHotspotDto
 {
@@ -74,6 +80,22 @@ public record AnomalyHotspotDto
     public required string ProjectName { get; init; }
     public int TotalQuota { get; init; }
     public int TotalExcluded { get; init; }
+    public decimal ExclusionRate { get; init; }
+    public required string TopReason { get; init; }
+}
+
+/// <summary>
+/// 分配级别异常 DTO
+/// </summary>
+public record AllocationAnomalyDto
+{
+    public int AllocationId { get; init; }
+    public required string UserName { get; init; }
+    public required string TaskPoolName { get; init; }
+    public required string ProjectName { get; init; }
+    public int TargetQuota { get; init; }
+    public int CurrentValid { get; init; }
+    public int CurrentExcluded { get; init; }
     public decimal ExclusionRate { get; init; }
     public required string TopReason { get; init; }
 }

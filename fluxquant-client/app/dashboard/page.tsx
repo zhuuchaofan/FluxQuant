@@ -152,16 +152,19 @@ function DashboardContent() {
             </CardContent>
           </Card>
 
-          <Card className={`border-gray-200 ${(stats?.anomalousPoolCount ?? 0) > 0 ? "bg-red-900/20 border-red-500/30" : "bg-white"}`}>
+          <Card className={`border-gray-200 ${((stats?.anomalousPoolCount ?? 0) + (stats?.anomalousAllocationCount ?? 0)) > 0 ? "bg-red-900/20 border-red-500/30" : "bg-white"}`}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-gray-600 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                异常任务
+                异常预警
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className={`text-3xl font-bold ${(stats?.anomalousPoolCount ?? 0) > 0 ? "text-red-400" : "text-green-400"}`}>
-                {stats?.anomalousPoolCount ?? 0}
+              <p className={`text-3xl font-bold ${((stats?.anomalousPoolCount ?? 0) + (stats?.anomalousAllocationCount ?? 0)) > 0 ? "text-red-400" : "text-green-400"}`}>
+                {(stats?.anomalousPoolCount ?? 0) + (stats?.anomalousAllocationCount ?? 0)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats?.anomalousPoolCount ?? 0} 任务池 · {stats?.anomalousAllocationCount ?? 0} 员工
               </p>
             </CardContent>
           </Card>
@@ -286,6 +289,53 @@ function DashboardContent() {
                   <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-2" />
                   <p className="text-green-400">一切正常！</p>
                   <p className="text-gray-500 text-sm">没有检测到异常任务池</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Allocation Anomalies - Employee Level */}
+          <Card className="bg-white border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-gray-900 flex items-center gap-2">
+                <Users className="h-5 w-5 text-orange-500" />
+                员工异常 (除外率 &gt; 10%)
+              </CardTitle>
+              <CardDescription className="text-gray-500">员工个人除外率异常预警</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {stats?.allocationAnomalies && stats.allocationAnomalies.length > 0 ? (
+                <div className="space-y-3">
+                  {stats.allocationAnomalies.map((anomaly) => (
+                    <div
+                      key={anomaly.allocationId}
+                      className="p-3 bg-orange-50 border border-orange-200 rounded-lg relative"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-gray-900 font-medium">{anomaly.userName}</p>
+                          <p className="text-xs text-gray-500">{anomaly.projectName} › {anomaly.taskPoolName}</p>
+                        </div>
+                        <Badge className="bg-orange-500/20 text-orange-600 border-orange-500/30">
+                          {anomaly.exclusionRate}%
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs text-orange-500 border-orange-400/30">
+                          {anomaly.topReason}
+                        </Badge>
+                        <span className="text-xs text-gray-500">
+                          有效 {anomaly.currentValid} · 除外 {anomaly.currentExcluded}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-2" />
+                  <p className="text-green-400">员工表现正常！</p>
+                  <p className="text-gray-500 text-sm">没有检测到员工除外率异常</p>
                 </div>
               )}
             </CardContent>
