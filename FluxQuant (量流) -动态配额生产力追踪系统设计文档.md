@@ -1,10 +1,10 @@
-**FluxQuant (****量流****) -** **动态配额生产力追踪系统设计文档**
+**FluxQuant (\*\***量流\***\*) -** **动态配额生产力追踪系统设计文档**
 
 版本: 1.0.0
 
 日期: 2026-01-17
 
-技术栈: ASP.NET Core (Minimal API) + Next.js (App Router) + SignalR
+技术栈: .NET 10 (Web API) + Next.js 15 (App Router/Server Actions) + SignalR (Admin Only)
 
 **1.** **项目愿景与核心理念** **(Vision & Philosophy)**
 
@@ -26,23 +26,23 @@
 
 **2.** **领域模型设计** **(Domain Model)**
 
-系统采用四层层级结构，核心实体为 **WorkPool (****任务池****)**。
+系统采用四层层级结构，核心实体为 **WorkPool (\*\***任务池\***\*)**。
 
 **2.1** **实体层级** **(Hierarchy)**
 
-1. **Project (****项目****)**: 宏观容器（例：2026 Q1 数据迁移）。
-2. **Stage (****阶段****)**: 逻辑切片（例：扫描 -> 清洗 -> 录入）。
-3. **TaskPool (****任务池****)**: **[****核心****]** 承载总工作量的蓄水池（例：合同扫描，总量 5000）。
-4. **Allocation (****分配单元****)**: 连接 TaskPool 与 User 的桥梁，定义“分给谁”以及“分多少”。
+1. **Project (\*\***项目\***\*)**: 宏观容器（例：2026 Q1 数据迁移）。
+2. **Stage (\*\***阶段\***\*)**: 逻辑切片（例：扫描 -> 清洗 -> 录入）。
+3. **TaskPool (\*\***任务池\***\*)**: **[\*\***核心\***\*]** 承载总工作量的蓄水池（例：合同扫描，总量 5000）。
+4. **Allocation (\*\***分配单元\***\*)**: 连接 TaskPool 与 User 的桥梁，定义“分给谁”以及“分多少”。
 
 **2.2** **状态定义**
 
 任务没有状态（Open/Close），只有**数值流向**：
 
-- **Total Quota (****总水位****)**: 任务池的当前总量。
-- **Valid Output (****有效产出****)**: 成功的完成量。
-- **Excluded (****除外****/****异常****)**: 因客观原因无法完成的量（从分母剔除）。
-- **Void Effort (****无效工时****)**: 做了但无效的工作（计入员工苦劳，但不计入项目进度）。
+- **Total Quota (\*\***总水位\***\*)**: 任务池的当前总量。
+- **Valid Output (\*\***有效产出\***\*)**: 成功的完成量。
+- **Excluded (\*\***除外\***\*/\*\***异常\***\*)**: 因客观原因无法完成的量（从分母剔除）。
+- **Void Effort (\*\***无效工时\***\*)**: 做了但无效的工作（计入员工苦劳，但不计入项目进度）。
 
 **3.** **详细设计：员工端** **(Employee Side)**
 
@@ -50,10 +50,10 @@
 
 **3.1** **界面交互** **(UI/UX)**
 
-- **视图**: **My Stream (****我的卡片流****)**。
+- **视图**: **My Stream (\*\***我的卡片流\***\*)**。
 - **展示**: 不显示复杂的项目全貌，仅显示“分配给我的卡片”。
   - 进度条: 个人目标达成率（如：已做 150 / 分配 200）。
-- **核心操作**: **“****每日结算****”****弹窗**。
+- **核心操作**: **“\*\***每日结算\***\*”\*\***弹窗\*\*。
 
 **3.2** **业务逻辑** **(Business Logic)**
 
@@ -82,11 +82,11 @@
 
 **4.1** **界面交互** **(UI/UX)**
 
-- **主视图**: **Allocation Matrix (****分配矩阵****)**。
+- **主视图**: **Allocation Matrix (\*\***分配矩阵\***\*)**。
   - 行: 任务池 (Task Pools)。
   - 列: 团队成员 (Users) + 未分配池 + 总量。
   - 单元格: 可直接编辑的分配数字。
-- **辅助视图**: **Analytics Dashboard (****分析仪表盘****)**。
+- **辅助视图**: **Analytics Dashboard (\*\***分析仪表盘\***\*)**。
 
 **4.2** **核心功能** **(Core Features)**
 
@@ -111,53 +111,53 @@
 
 **5.** **数据架构设计** **(Database Schema)**
 
-基于关系型数据库 (PostgreSQL/SQL Server)，采用 **“****快照** **+** **事件溯源****”** 的混合模式。
+基于关系型数据库 (PostgreSQL/SQL Server)，采用 **“\*\***快照\*\* **+** **事件溯源\*\***”\*\* 的混合模式。
 
 **5.1** **静态结构表**
 
 -- 任务池定义
- CREATE TABLE TaskPools (
-   Id INT PRIMARY KEY,
-   ProjectId INT,
-   Name NVARCHAR(100),
-   CurrentTotalQuota INT, -- 当前总量（可变）
-   RowVersion TIMESTAMP  -- 用于并发控制的乐观锁
- );
- 
- -- 分配关系
- CREATE TABLE Allocations (
-   Id INT PRIMARY KEY,
-   TaskPoolId INT,
-   UserId INT,
-   TargetQuota INT,    -- 分配目标
-   CurrentValid INT,   -- [快照] 当前有效产出
-   CurrentExcluded INT  -- [快照] 当前除外量
- );
+CREATE TABLE TaskPools (
+Id INT PRIMARY KEY,
+ProjectId INT,
+Name NVARCHAR(100),
+CurrentTotalQuota INT, -- 当前总量（可变）
+RowVersion TIMESTAMP -- 用于并发控制的乐观锁
+);
 
-**5.2** **动态流水表** **(****系统的核心****)**
+-- 分配关系
+CREATE TABLE Allocations (
+Id INT PRIMARY KEY,
+TaskPoolId INT,
+UserId INT,
+TargetQuota INT, -- 分配目标
+CurrentValid INT, -- [快照] 当前有效产出
+CurrentExcluded INT -- [快照] 当前除外量
+);
+
+**5.2** **动态流水表** **(\*\***系统的核心\***\*)**
 
 -- 生产日志 (记录每一次填报)
- CREATE TABLE ProductionLogs (
-   Id BIGINT PRIMARY KEY,
-   AllocationId INT,
-   Date DATE,
-   ValidQty INT,
-   ExcludedQty INT,
-   ExclusionReason NVARCHAR(50), -- 仅当 ExcludedQty > 0 时非空
-   Comment NVARCHAR(200),
-   CreatedAt DATETIME
- );
- 
- -- 总量调整审计 (记录每一次分母变化)
- CREATE TABLE PoolAdjustmentLogs (
-   Id INT PRIMARY KEY,
-   TaskPoolId INT,
-   OldQuota INT,
-   NewQuota INT,
-   Reason NVARCHAR(200),
-   OperatorId INT,
-   CreatedAt DATETIME
- );
+CREATE TABLE ProductionLogs (
+Id BIGINT PRIMARY KEY,
+AllocationId INT,
+Date DATE,
+ValidQty INT,
+ExcludedQty INT,
+ExclusionReason NVARCHAR(50), -- 仅当 ExcludedQty > 0 时非空
+Comment NVARCHAR(200),
+CreatedAt DATETIME
+);
+
+-- 总量调整审计 (记录每一次分母变化)
+CREATE TABLE PoolAdjustmentLogs (
+Id INT PRIMARY KEY,
+TaskPoolId INT,
+OldQuota INT,
+NewQuota INT,
+Reason NVARCHAR(200),
+OperatorId INT,
+CreatedAt DATETIME
+);
 
 **6.** **关键算法与逻辑** **(Key Algorithms)**
 
@@ -165,19 +165,20 @@
 
 后端不存储“进度百分比”，永远是实时计算得出。
 
-public class ProgressCalculator 
- {
-   public decimal Calculate(int currentTotal, int totalValid, int totalExcluded) 
-   {
-     // 核心公式：分母 = 总量 - 除外量
-     int effectiveTotal = currentTotal - totalExcluded;
-     
+public class ProgressCalculator
+{
+public decimal Calculate(int currentTotal, int totalValid, int totalExcluded)
+{
+// 核心公式：分母 = 总量 - 除外量
+int effectiveTotal = currentTotal - totalExcluded;
+
      if (effectiveTotal <= 0) return 0; // 避免除以零
      if (totalValid >= effectiveTotal) return 100; // 防止溢出
-     
+
      return (decimal)totalValid / effectiveTotal * 100;
-   }
- }
+
+}
+}
 
 **6.2** **每日快照** **Job (Daily Snapshot)**
 
@@ -196,7 +197,7 @@ public class ProgressCalculator
 
 1. **海量数据聚合**:
 
-- 场景: 矩阵视图需要加载 50 个任务 * 10 个人的实时数据。
+- 场景: 矩阵视图需要加载 50 个任务 \* 10 个人的实时数据。
 - 方案: 在 Allocations 表中维护 CurrentValid 快照字段。每次插入 Log 时，原子性更新 Allocation 表，读的时候直接读 Allocation，避免 Sum(Logs)。
 
 **8.** **总结**
