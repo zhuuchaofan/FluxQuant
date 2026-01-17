@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, ChevronDown, ChevronUp, Rocket } from "lucide-react";
+import { Loader2, Plus, ChevronDown, ChevronUp, Rocket, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { type MyAllocationDto, type ReportRequest, EXCLUSION_REASONS } from "./types";
 import { submitReportAction } from "@/lib/actions/report";
@@ -42,6 +42,7 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
     : 0;
 
   const remaining = allocation.targetQuota - newTotal;
+  const willExceed = newTotal > allocation.targetQuota && (validQty > 0 || excludedQty > 0);
 
   const handleQuickAdd = (amount: number) => {
     setValidQty((prev) => Math.max(0, prev + amount));
@@ -79,9 +80,15 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
       const result = await submitReportAction(request);
 
       if (result.success) {
-        toast.success(`填报成功！进度 ${newProgressPercent}%`, {
-          description: `有效 +${validQty}${excludedQty > 0 ? `，除外 +${excludedQty}` : ""}`,
-        });
+        if (willExceed) {
+          toast.warning(`填报成功！进度已超额 ${newProgressPercent}%`, {
+            description: `有效 +${validQty}${excludedQty > 0 ? `，除外 +${excludedQty}` : ""}`,
+          });
+        } else {
+          toast.success(`填报成功！进度 ${newProgressPercent}%`, {
+            description: `有效 +${validQty}${excludedQty > 0 ? `，除外 +${excludedQty}` : ""}`,
+          });
+        }
         onSuccess(validQty, excludedQty);
         // 重置表单
         setValidQty(0);
@@ -224,11 +231,22 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
             )}
           </div>
 
+          {/* 超额警告 */}
+          {willExceed && (
+            <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+              <span>此填报将使进度超过目标 {newTotal - allocation.targetQuota} 个单位</span>
+            </div>
+          )}
+
           {/* 提交按钮 */}
           <Button
             onClick={handleSubmit}
             disabled={isLoading || (validQty === 0 && excludedQty === 0)}
-            className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
+            className={`w-full h-12 ${willExceed 
+              ? "bg-yellow-600 hover:bg-yellow-700" 
+              : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
+            }`}
           >
             {isLoading ? (
               <>
@@ -237,7 +255,7 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
               </>
             ) : (
               <>
-                提交 (进度将升至 {Math.min(newProgressPercent, 100)}%)
+                {willExceed ? "确认超额提交" : `提交 (进度将升至 ${Math.min(newProgressPercent, 100)}%)`}
                 <Rocket className="ml-2 h-4 w-4" />
               </>
             )}
