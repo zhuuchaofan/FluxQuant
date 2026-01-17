@@ -55,6 +55,8 @@ try
     builder.Services.AddScoped<FluxQuant.Server.Features.MyStream.MyStreamService>();
     builder.Services.AddScoped<FluxQuant.Server.Features.Report.ReportService>();
     builder.Services.AddScoped<FluxQuant.Server.Features.Matrix.MatrixService>();
+    builder.Services.AddScoped<FluxQuant.Server.Features.Dashboard.DashboardService>();
+    builder.Services.AddScoped<FluxQuant.Server.Features.Seed.SeedService>();
 
     // Carter (Minimal API 路由)
     builder.Services.AddCarter();
@@ -103,6 +105,19 @@ try
     app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }))
         .WithName("HealthCheck")
         .WithTags("Health");
+
+    // 开发环境：种子数据端点
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapPost("/api/v1/seed", async (FluxQuant.Server.Features.Seed.SeedService seedService, CancellationToken ct) =>
+        {
+            await seedService.SeedAsync(ct);
+            return Results.Ok(new { Message = "测试数据播种完成" });
+        })
+        .WithName("SeedData")
+        .WithTags("Development")
+        .AllowAnonymous();
+    }
 
     Log.Information("FluxQuant 服务器已启动，访问 /scalar/v1 查看 API 文档");
 
