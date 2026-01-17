@@ -17,7 +17,7 @@ import { getDashboardStatsAction, seedDataAction } from "@/lib/actions/dashboard
 export default function DashboardPage() {
   const queryClient = useQueryClient();
   
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["dashboardStats"],
     queryFn: async () => {
       const result = await getDashboardStatsAction();
@@ -27,6 +27,7 @@ export default function DashboardPage() {
       return result.data;
     },
     refetchInterval: 10000, // 10 秒轮询
+    retry: 1, // 只重试一次
   });
 
   const seedMutation = useMutation({
@@ -49,6 +50,35 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 flex items-center justify-center">
         <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // 错误状态处理 - 当后端不可用时
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <AlertTriangle className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">无法连接到服务器</h2>
+          <p className="text-zinc-400 mb-6">
+            {error?.message || "请确保后端服务已启动 (http://localhost:5555)"}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button
+              onClick={() => refetch()}
+              className="bg-blue-600 hover:bg-blue-500"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              重试
+            </Button>
+            <Link href="/admin">
+              <Button variant="outline" className="border-zinc-600 text-zinc-300">
+                项目管理
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
