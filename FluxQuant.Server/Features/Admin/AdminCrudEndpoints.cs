@@ -323,6 +323,13 @@ public class AdminCrudEndpoints : ICarterModule
     {
         if (!IsAdmin(user)) return Results.Forbid();
 
+        // 防止删除自己
+        var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == id.ToString())
+        {
+            return Results.BadRequest(new { Error = "不能删除自己的账户" });
+        }
+
         var result = await service.DeleteUserAsync(id, ct);
         return result.IsSuccess
             ? Results.NoContent()
