@@ -34,7 +34,7 @@ function MyStreamContent() {
     refetchInterval: 30000,
   });
 
-  const allocations = data ?? [];
+  const allocations = useMemo(() => data ?? [], [data]);
   const todayTotal = allocations.reduce((sum, a) => sum + a.currentValid, 0);
   const completedCount = allocations.filter((a) => a.isCompleted).length;
   const inProgressCount = allocations.length - completedCount;

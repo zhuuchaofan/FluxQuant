@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Clock, AlertTriangle } from "lucide-react";
-import { type MyAllocationDto } from "./types";
+import { type MyAllocationDto } from "@/components/features/stream/types";
 import { ReportModal } from "./ReportModal";
 
 interface TaskCardProps {
@@ -27,8 +27,8 @@ export function TaskCard({ allocation, onReportSuccess }: TaskCardProps) {
 
   const handleReportSuccess = (validQty: number, excludedQty: number) => {
     // Optimistic UI 更新
-    setOptimisticValid((prev) => prev + validQty);
-    setOptimisticExcluded((prev) => prev + excludedQty);
+    setOptimisticValid((prev: number) => prev + validQty);
+    setOptimisticExcluded((prev: number) => prev + excludedQty);
     setIsReportOpen(false);
     onReportSuccess?.();
   };
