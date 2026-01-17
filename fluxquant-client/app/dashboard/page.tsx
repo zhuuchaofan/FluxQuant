@@ -1,9 +1,9 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { 
-  Zap, LayoutGrid, RefreshCw, Database, TrendingUp, Users, 
+  Zap, LayoutGrid, RefreshCw, TrendingUp, Users, 
   AlertTriangle, Clock, CheckCircle2, BarChart3, Loader2,
   ArrowUpRight
 } from "lucide-react";
@@ -11,10 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
 import { GlobalUserMenu } from "@/components/global-user-menu";
-import { getDashboardStatsAction, seedDataAction } from "@/lib/actions/dashboard";
+import { getDashboardStatsAction } from "@/lib/actions/dashboard";
 
 export default function DashboardPage() {
   return (
@@ -25,8 +24,6 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const queryClient = useQueryClient();
-  
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ["dashboardStats"],
     queryFn: async () => {
@@ -38,22 +35,6 @@ function DashboardContent() {
     },
     refetchInterval: 10000, // 10 秒轮询
     retry: 1, // 只重试一次
-  });
-
-  const seedMutation = useMutation({
-    mutationFn: seedDataAction,
-    onSuccess: (result) => {
-      if (result.success) {
-        toast.success("测试数据播种成功！");
-        queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
-        queryClient.invalidateQueries({ queryKey: ["projects"] });
-      } else {
-        toast.error(result.error || "播种失败");
-      }
-    },
-    onError: () => {
-      toast.error("网络错误");
-    },
   });
 
   if (isLoading) {
@@ -110,20 +91,6 @@ function DashboardContent() {
             </Badge>
           </div>
           <nav className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => seedMutation.mutate()}
-              disabled={seedMutation.isPending}
-              className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
-            >
-              {seedMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Database className="mr-2 h-4 w-4" />
-              )}
-              播种测试数据
-            </Button>
             <Link href="/admin">
               <Button variant="ghost" className="text-gray-700 hover:text-gray-900">
                 <LayoutGrid className="mr-2 h-4 w-4" />
