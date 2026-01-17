@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Zap, RefreshCw, LogOut, LayoutGrid, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -13,8 +14,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TaskCard } from "@/components/features/stream";
 import { getMyAllocationsAction } from "@/lib/actions/report";
+import { logoutAction } from "@/lib/actions/auth";
+import { toast } from "sonner";
 
 export default function MyStreamPage() {
+  const router = useRouter();
+  
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["myAllocations"],
     queryFn: async () => {
@@ -30,6 +35,16 @@ export default function MyStreamPage() {
   const allocations = data ?? [];
   const todayTotal = allocations.reduce((sum, a) => sum + a.currentValid, 0);
   const completedCount = allocations.filter((a) => a.isCompleted).length;
+
+  const handleLogout = async () => {
+    const result = await logoutAction();
+    if (result.success) {
+      toast.success("已退出登录");
+      router.push("/login");
+    } else {
+      toast.error("退出失败");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
@@ -71,11 +86,16 @@ export default function MyStreamPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-zinc-800 border-zinc-700">
-                <DropdownMenuItem className="text-zinc-300 focus:bg-zinc-700 focus:text-white">
-                  <LayoutGrid className="mr-2 h-4 w-4" />
-                  <Link href="/admin/matrix">管理后台</Link>
+                <DropdownMenuItem asChild className="text-zinc-300 focus:bg-zinc-700 focus:text-white cursor-pointer">
+                  <Link href="/admin">
+                    <LayoutGrid className="mr-2 h-4 w-4" />
+                    管理后台
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-zinc-300 focus:bg-zinc-700 focus:text-white">
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="text-zinc-300 focus:bg-zinc-700 focus:text-white cursor-pointer"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   退出登录
                 </DropdownMenuItem>

@@ -1,7 +1,7 @@
 "use server";
 
-import { apiPost } from "@/lib/api";
-import { type LoginRequest, type RegisterRequest, type AuthResponse } from "@/lib/types";
+import { apiPost, apiGet } from "@/lib/api";
+import { type LoginRequest, type RegisterRequest, type AuthResponse, type UserDto } from "@/lib/types";
 
 /**
  * 用户注册 Server Action
@@ -12,8 +12,6 @@ export async function registerAction(data: RegisterRequest) {
   if (!response.success) {
     return { success: false, error: response.error };
   }
-  
-  // TODO: 设置 HttpOnly Cookie
   
   return { success: true, data: response.data };
 }
@@ -28,8 +26,6 @@ export async function loginAction(data: LoginRequest) {
     return { success: false, error: response.error };
   }
   
-  // TODO: 设置 HttpOnly Cookie
-  
   return { success: true, data: response.data };
 }
 
@@ -37,6 +33,19 @@ export async function loginAction(data: LoginRequest) {
  * 用户登出 Server Action
  */
 export async function logoutAction() {
-  // TODO: 清除 Cookie
-  return { success: true };
+  const response = await apiPost<{ message: string }>("/api/v1/auth/logout", {});
+  return { success: response.success };
+}
+
+/**
+ * 获取当前登录用户信息 Server Action
+ */
+export async function getCurrentUserAction() {
+  const response = await apiGet<UserDto>("/api/v1/auth/me");
+  
+  if (!response.success) {
+    return { success: false, error: response.error };
+  }
+  
+  return { success: true, data: response.data };
 }

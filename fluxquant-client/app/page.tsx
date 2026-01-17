@@ -51,7 +51,7 @@ export default function HomePage() {
               免费开始
             </Button>
           </Link>
-          <Link href="/demo">
+          <Link href="/dashboard">
             <Button size="lg" variant="outline" className="text-lg px-8 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
               查看演示
             </Button>
