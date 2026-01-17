@@ -114,12 +114,11 @@ export function TaskCard({ allocation, onReportSuccess }: TaskCardProps) {
             onClick={() => setIsReportOpen(true)}
             className={`w-full ${
               isCompleted 
-                ? "bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-500/30" 
+                ? "bg-green-600 hover:bg-green-700 text-white" 
                 : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
             }`}
-            disabled={isCompleted}
           >
-            {isCompleted ? "任务已完成 🎉" : "汇报进度"}
+            {isCompleted ? "追加填报 ✨" : "汇报进度"}
           </Button>
         </CardContent>
       </Card>

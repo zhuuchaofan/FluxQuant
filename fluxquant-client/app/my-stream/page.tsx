@@ -1,12 +1,15 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Zap, RefreshCw, Loader2 } from "lucide-react";
+import { Zap, RefreshCw, Loader2, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskCard } from "@/components/features/stream";
 import { getMyAllocationsAction } from "@/lib/actions/report";
 import { AuthGuard } from "@/components/auth-guard";
 import { GlobalUserMenu } from "@/components/global-user-menu";
+
+type FilterType = "all" | "inProgress" | "completed";
 
 export default function MyStreamPage() {
   return (
@@ -17,6 +20,8 @@ export default function MyStreamPage() {
 }
 
 function MyStreamContent() {
+  const [filter, setFilter] = useState<FilterType>("all");
+
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["myAllocations"],
     queryFn: async () => {
@@ -32,6 +37,19 @@ function MyStreamContent() {
   const allocations = data ?? [];
   const todayTotal = allocations.reduce((sum, a) => sum + a.currentValid, 0);
   const completedCount = allocations.filter((a) => a.isCompleted).length;
+  const inProgressCount = allocations.length - completedCount;
+
+  // 根据筛选条件过滤任务
+  const filteredAllocations = useMemo(() => {
+    switch (filter) {
+      case "inProgress":
+        return allocations.filter((a) => !a.isCompleted);
+      case "completed":
+        return allocations.filter((a) => a.isCompleted);
+      default:
+        return allocations;
+    }
+  }, [allocations, filter]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50">
@@ -73,23 +91,36 @@ function MyStreamContent() {
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6">
           <Button
-            variant="ghost"
+            variant={filter === "all" ? "default" : "ghost"}
             size="sm"
-            className="text-gray-900 bg-white border border-gray-300"
+            onClick={() => setFilter("all")}
+            className={filter === "all" 
+              ? "bg-blue-600 hover:bg-blue-700 text-white" 
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }
           >
+            <ListFilter className="w-4 h-4 mr-1" />
             全部任务 ({allocations.length})
           </Button>
           <Button
-            variant="ghost"
+            variant={filter === "inProgress" ? "default" : "ghost"}
             size="sm"
-            className="text-gray-600 hover:text-gray-900"
+            onClick={() => setFilter("inProgress")}
+            className={filter === "inProgress" 
+              ? "bg-blue-600 hover:bg-blue-700 text-white" 
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }
           >
-            进行中 ({allocations.length - completedCount})
+            进行中 ({inProgressCount})
           </Button>
           <Button
-            variant="ghost"
+            variant={filter === "completed" ? "default" : "ghost"}
             size="sm"
-            className="text-gray-600 hover:text-gray-900"
+            onClick={() => setFilter("completed")}
+            className={filter === "completed" 
+              ? "bg-green-600 hover:bg-green-700 text-white" 
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }
           >
             已完成 ({completedCount})
           </Button>
@@ -98,22 +129,18 @@ function MyStreamContent() {
         {/* Task Cards */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-4" />
-            <p className="text-gray-600">加载任务中...</p>
+            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+            <p className="mt-4 text-gray-500">加载中...</p>
           </div>
-        ) : allocations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Zap className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无任务</h3>
-            <p className="text-gray-600 text-sm max-w-xs">
-              您目前没有分配的任务，请联系管理员分配工作
+        ) : filteredAllocations.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500">
+              {filter === "all" ? "暂无分配任务" : filter === "inProgress" ? "没有进行中的任务" : "没有已完成的任务"}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {allocations.map((allocation) => (
+            {filteredAllocations.map((allocation) => (
               <TaskCard
                 key={allocation.id}
                 allocation={allocation}
@@ -123,14 +150,6 @@ function MyStreamContent() {
           </div>
         )}
       </main>
-
-      {/* Mobile Today Output */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:hidden">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 shadow-lg">
-          <span className="text-xs text-gray-600">今日:</span>
-          <span className="text-xl font-bold text-blue-600 font-mono">{todayTotal}</span>
-        </div>
-      </div>
     </div>
   );
 }
