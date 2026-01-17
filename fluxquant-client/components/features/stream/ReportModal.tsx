@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,29 +99,36 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
     }
   };
 
-  return (
-    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="bottom" className="bg-white border-gray-200 h-auto max-h-[85vh] overflow-y-auto">
-        <SheetHeader className="text-left">
-          <SheetTitle className="text-gray-900">{allocation.taskPoolName}</SheetTitle>
-          <SheetDescription className="text-gray-600">
-            {allocation.stageName} · {allocation.projectName}
-          </SheetDescription>
-        </SheetHeader>
+  const handleClose = () => {
+    setValidQty(0);
+    setExcludedQty(0);
+    setExclusionReason("");
+    setComment("");
+    setShowExclusion(false);
+    onClose();
+  };
 
-        <div className="mt-6 space-y-6">
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="bg-white border-gray-200 sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-gray-900">{allocation.taskPoolName}</DialogTitle>
+          <DialogDescription className="text-gray-600">
+            {allocation.stageName} · {allocation.projectName}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
           {/* 有效产出 */}
-          <div className="space-y-3">
-            <Label className="text-gray-700 text-base">今天搞定了多少？</Label>
-            <div className="flex items-center gap-3">
-              <Input
-                type="number"
-                min={0}
-                value={validQty}
-                onChange={(e) => setValidQty(Math.max(0, parseInt(e.target.value) || 0))}
-                className="text-3xl h-16 bg-gray-100 border-gray-300 text-gray-900 text-center font-mono"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label className="text-gray-700">今天搞定了多少？</Label>
+            <Input
+              type="number"
+              min={0}
+              value={validQty}
+              onChange={(e) => setValidQty(Math.max(0, parseInt(e.target.value) || 0))}
+              className="text-2xl h-14 bg-gray-50 border-gray-300 text-gray-900 text-center font-mono"
+            />
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -146,7 +153,7 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
                 variant="outline"
                 size="sm"
                 onClick={handleMaxValid}
-                className="border-cyan-600 text-cyan-600 hover:bg-cyan-900/20"
+                className="border-blue-500 text-blue-600 hover:bg-blue-50"
               >
                 MAX ({Math.max(0, allocation.targetQuota - currentTotal - excludedQty)})
               </Button>
@@ -158,9 +165,9 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
             <button
               type="button"
               onClick={() => setShowExclusion(!showExclusion)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-white transition-colors"
+              className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
             >
-              <span className="text-gray-600">遇到无法处理的数据？</span>
+              <span className="text-sm text-gray-600">遇到无法处理的数据？</span>
               {showExclusion ? (
                 <ChevronUp className="w-4 h-4 text-gray-500" />
               ) : (
@@ -169,30 +176,30 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
             </button>
 
             {showExclusion && (
-              <div className="p-4 pt-0 space-y-4 border-t border-gray-200">
+              <div className="p-3 pt-0 space-y-3 border-t border-gray-200">
                 {/* 除外数量 */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label className="text-gray-600 text-sm">除外数量</Label>
                   <Input
                     type="number"
                     min={0}
                     value={excludedQty}
                     onChange={(e) => setExcludedQty(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="bg-gray-100 border-gray-300 text-gray-900"
+                    className="bg-gray-50 border-gray-300 text-gray-900"
                   />
                 </div>
 
                 {/* 除外原因 */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label className="text-gray-600 text-sm">原因 (必选)</Label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {EXCLUSION_REASONS.map((reason) => (
                       <Badge
                         key={reason}
                         variant={exclusionReason === reason ? "default" : "outline"}
-                        className={`cursor-pointer transition-colors ${
+                        className={`cursor-pointer transition-colors text-xs ${
                           exclusionReason === reason
-                            ? "bg-orange-500 text-gray-900"
+                            ? "bg-orange-500 text-white"
                             : "border-gray-300 text-gray-600 hover:bg-gray-100"
                         }`}
                         onClick={() => setExclusionReason(reason)}
@@ -204,13 +211,13 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
                 </div>
 
                 {/* 备注 */}
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label className="text-gray-600 text-sm">备注 (可选)</Label>
                   <Input
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="如：损坏文件名..."
-                    className="bg-gray-100 border-gray-300 text-gray-900 placeholder:text-gray-500"
+                    className="bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-400"
                   />
                 </div>
               </div>
@@ -221,29 +228,29 @@ export function ReportModal({ open, onClose, allocation, onSuccess }: ReportModa
           <Button
             onClick={handleSubmit}
             disabled={isLoading || (validQty === 0 && excludedQty === 0)}
-            className="w-full h-14 text-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 提交中...
               </>
             ) : (
               <>
                 提交 (进度将升至 {Math.min(newProgressPercent, 100)}%)
-                <Rocket className="ml-2 h-5 w-5" />
+                <Rocket className="ml-2 h-4 w-4" />
               </>
             )}
           </Button>
 
           {/* 剩余提示 */}
           {remaining > 0 && newTotal > currentTotal && (
-            <p className="text-center text-sm text-gray-500">
-              提交后还剩 <span className="text-cyan-600">{remaining}</span> 个单位
+            <p className="text-center text-xs text-gray-500">
+              提交后还剩 <span className="text-blue-600">{remaining}</span> 个单位
             </p>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
