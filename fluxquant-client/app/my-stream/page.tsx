@@ -1,22 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Zap, RefreshCw, LogOut, LayoutGrid, Loader2 } from "lucide-react";
+import { Zap, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { TaskCard } from "@/components/features/stream";
 import { getMyAllocationsAction } from "@/lib/actions/report";
-import { logoutAction } from "@/lib/actions/auth";
-import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
+import { GlobalUserMenu } from "@/components/global-user-menu";
 
 export default function MyStreamPage() {
   return (
@@ -27,8 +17,6 @@ export default function MyStreamPage() {
 }
 
 function MyStreamContent() {
-  const router = useRouter();
-  
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["myAllocations"],
     queryFn: async () => {
@@ -38,22 +26,12 @@ function MyStreamContent() {
       }
       return result.data ?? [];
     },
-    refetchInterval: 30000, // 30 秒轮询
+    refetchInterval: 30000,
   });
 
   const allocations = data ?? [];
   const todayTotal = allocations.reduce((sum, a) => sum + a.currentValid, 0);
   const completedCount = allocations.filter((a) => a.isCompleted).length;
-
-  const handleLogout = async () => {
-    const result = await logoutAction();
-    if (result.success) {
-      toast.success("已退出登录");
-      router.push("/login");
-    } else {
-      toast.error("退出失败");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50">
@@ -85,31 +63,7 @@ function MyStreamContent() {
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
 
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-blue-600 text-white text-sm">U</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white border-gray-200">
-                <DropdownMenuItem asChild className="text-gray-700 focus:bg-gray-100 focus:text-gray-900 cursor-pointer">
-                  <Link href="/admin">
-                    <LayoutGrid className="mr-2 h-4 w-4" />
-                    管理后台
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={handleLogout}
-                  className="text-gray-700 focus:bg-gray-100 focus:text-gray-900 cursor-pointer"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  退出登录
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <GlobalUserMenu />
           </div>
         </div>
       </header>

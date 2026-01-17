@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
+import { GlobalUserMenu } from "@/components/global-user-menu";
 import {
   getUsersAction,
   createUserAction,
@@ -156,13 +157,16 @@ function UsersManageContent() {
               <span className="text-xl font-bold text-gray-900">用户管理</span>
             </div>
           </div>
-          <Button 
-            onClick={() => setUserDialog({ open: true, mode: "create" })} 
-            className="bg-blue-600 hover:bg-blue-500"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            新建用户
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => setUserDialog({ open: true, mode: "create" })} 
+              className="bg-blue-600 hover:bg-blue-500"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              新建用户
+            </Button>
+            <GlobalUserMenu />
+          </div>
         </div>
       </header>
 

@@ -232,11 +232,17 @@ function TaskPoolRow({
     return map;
   }, [pool.allocations]);
 
+  // 是否超额
+  const isOverAllocated = pool.totalQuota - pool.assignedTotal < 0;
+
   return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50">
+    <tr className={`border-b border-gray-100 ${isOverAllocated ? 'bg-yellow-50 hover:bg-yellow-100' : 'hover:bg-gray-50'}`}>
       {/* Task Pool Name */}
-      <td className="sticky left-0 z-10 bg-white px-4 py-3">
+      <td className={`sticky left-0 z-10 px-4 py-3 ${isOverAllocated ? 'bg-yellow-50' : 'bg-white'}`}>
         <div className="flex items-center gap-2">
+          {isOverAllocated && (
+            <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+          )}
           <span className="text-gray-900 text-sm">{pool.taskPoolName}</span>
           {pool.isAnomalous && (
             <Badge className="bg-red-100 text-red-600 border-red-200 text-xs">

@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
+import { GlobalUserMenu } from "@/components/global-user-menu";
 import { getDashboardStatsAction, seedDataAction } from "@/lib/actions/dashboard";
 
 export default function DashboardPage() {
@@ -137,6 +138,7 @@ function DashboardContent() {
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
+            <GlobalUserMenu />
           </nav>
         </div>
       </header>

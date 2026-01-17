@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
+import { GlobalUserMenu } from "@/components/global-user-menu";
 import {
   getAllProjectsAction,
   createProjectAction,
@@ -186,10 +187,13 @@ function ProjectsManageContent() {
               <span className="text-xl font-bold text-gray-900">项目管理</span>
             </div>
           </div>
-          <Button onClick={() => setProjectDialog({ open: true, mode: "create" })} className="bg-blue-600 hover:bg-blue-500">
-            <Plus className="mr-2 h-4 w-4" />
-            新建项目
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={() => setProjectDialog({ open: true, mode: "create" })} className="bg-blue-600 hover:bg-blue-500">
+              <Plus className="mr-2 h-4 w-4" />
+              新建项目
+            </Button>
+            <GlobalUserMenu />
+          </div>
         </div>
       </header>
 
