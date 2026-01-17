@@ -31,6 +31,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { AuthGuard } from "@/components/auth-guard";
 import {
   getAllProjectsAction,
   createProjectAction,
@@ -43,6 +44,14 @@ import {
 import type { ProjectDetailDto, StageDto } from "@/components/features/admin/types";
 
 export default function ProjectsManagePage() {
+  return (
+    <AuthGuard requiredRole="Manager">
+      <ProjectsManageContent />
+    </AuthGuard>
+  );
+}
+
+function ProjectsManageContent() {
   const queryClient = useQueryClient();
   const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set());
   const [projectDialog, setProjectDialog] = useState<{
@@ -339,7 +348,7 @@ export default function ProjectsManagePage() {
               确认删除{deleteDialog.type === "project" ? "项目" : "阶段"}？
             </AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400">
-              确定要删除 "{deleteDialog.name}" 吗？此操作无法撤销。
+              确定要删除「{deleteDialog.name}」吗？此操作无法撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

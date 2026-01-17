@@ -12,9 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { AuthGuard } from "@/components/auth-guard";
 import { getDashboardStatsAction, seedDataAction } from "@/lib/actions/dashboard";
 
 export default function DashboardPage() {
+  return (
+    <AuthGuard requiredRole="Manager">
+      <DashboardContent />
+    </AuthGuard>
+  );
+}
+
+function DashboardContent() {
   const queryClient = useQueryClient();
   
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({

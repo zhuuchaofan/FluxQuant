@@ -10,9 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { AuthGuard } from "@/components/auth-guard";
 import { getProjectsAction } from "@/lib/actions/matrix";
 
 export default function AdminDashboard() {
+  return (
+    <AuthGuard requiredRole="Manager">
+      <AdminDashboardContent />
+    </AuthGuard>
+  );
+}
+
+function AdminDashboardContent() {
   const { data, isLoading } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {

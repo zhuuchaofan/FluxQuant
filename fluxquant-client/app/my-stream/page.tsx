@@ -16,8 +16,17 @@ import { TaskCard } from "@/components/features/stream";
 import { getMyAllocationsAction } from "@/lib/actions/report";
 import { logoutAction } from "@/lib/actions/auth";
 import { toast } from "sonner";
+import { AuthGuard } from "@/components/auth-guard";
 
 export default function MyStreamPage() {
+  return (
+    <AuthGuard>
+      <MyStreamContent />
+    </AuthGuard>
+  );
+}
+
+function MyStreamContent() {
   const router = useRouter();
   
   const { data, isLoading, refetch, isFetching } = useQuery({

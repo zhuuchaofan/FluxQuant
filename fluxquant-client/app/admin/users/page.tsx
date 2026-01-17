@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { AuthGuard } from "@/components/auth-guard";
 import {
   getUsersAction,
   createUserAction,
@@ -54,6 +55,14 @@ const roleLabels: Record<string, { label: string; color: string; icon: typeof Sh
 };
 
 export default function UsersManagePage() {
+  return (
+    <AuthGuard requiredRole="Admin">
+      <UsersManageContent />
+    </AuthGuard>
+  );
+}
+
+function UsersManageContent() {
   const queryClient = useQueryClient();
   const [userDialog, setUserDialog] = useState<{
     open: boolean;
@@ -295,7 +304,7 @@ export default function UsersManagePage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">确认删除用户？</AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400">
-              确定要删除用户 "{deleteDialog.username}" 吗？此操作无法撤销。
+              确定要删除用户「{deleteDialog.username}」吗？此操作无法撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

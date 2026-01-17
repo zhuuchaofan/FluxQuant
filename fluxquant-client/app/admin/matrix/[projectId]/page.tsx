@@ -8,9 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MatrixGrid } from "@/components/features/matrix";
+import { AuthGuard } from "@/components/auth-guard";
 import { getMatrixDataAction } from "@/lib/actions/matrix";
 
 export default function MatrixPage() {
+  return (
+    <AuthGuard requiredRole="Manager">
+      <MatrixContent />
+    </AuthGuard>
+  );
+}
+
+function MatrixContent() {
   const params = useParams();
   const projectId = parseInt(params.projectId as string);
 
