@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { 
-  Zap, Plus, ArrowLeft, Loader2, Pencil, Trash2, 
+  Plus, Loader2, Pencil, Trash2, 
   ChevronDown, ChevronRight, FolderPlus, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
-import { GlobalUserMenu } from "@/components/global-user-menu";
+import { AppLayout } from "@/components/layout";
 import {
   getAllProjectsAction,
   createProjectAction,
@@ -174,134 +173,119 @@ function ProjectsManageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 backdrop-blur-md bg-white/80">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">项目管理</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={() => setProjectDialog({ open: true, mode: "create" })} className="bg-blue-600 hover:bg-blue-500">
-              <Plus className="mr-2 h-4 w-4" />
-              新建项目
-            </Button>
-            <GlobalUserMenu />
-          </div>
+    <AppLayout
+      title="项目管理"
+      backHref="/admin"
+      headerActions={
+        <Button onClick={() => setProjectDialog({ open: true, mode: "create" })} className="bg-blue-600 hover:bg-blue-500">
+          <Plus className="mr-2 h-4 w-4" />
+          新建项目
+        </Button>
+      }
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-          </div>
-        ) : !projects || projects.length === 0 ? (
-          <div className="text-center py-20">
-            <FolderPlus className="h-16 w-16 text-zinc-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无项目</h3>
-            <p className="text-gray-600 mb-6">点击上方的新建项目按钮创建第一个项目</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {projects.map((project) => (
-              <Card key={project.id} className="bg-white border-gray-200">
-                <CardHeader 
-                  className="cursor-pointer" 
-                  onClick={() => toggleProject(project.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {expandedProjects.has(project.id) ? (
-                        <ChevronDown className="h-5 w-5 text-gray-600" />
-                      ) : (
-                        <ChevronRight className="h-5 w-5 text-gray-600" />
-                      )}
-                      <div>
-                        <CardTitle className="text-gray-900 flex items-center gap-2">
-                          {project.name}
-                          <Badge variant="outline" className="text-gray-600 border-gray-300">
-                            {project.code}
-                          </Badge>
-                          {!project.isActive && (
-                            <Badge className="bg-zinc-700 text-gray-600">已归档</Badge>
-                          )}
-                        </CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {project.stages.length} 个阶段 · 
-                          {project.stages.reduce((sum, s) => sum + s.taskPoolCount, 0)} 个任务池
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setProjectDialog({ open: true, mode: "edit", project })}
-                        className="text-gray-600 hover:text-gray-900"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteDialog({ 
-                          open: true, 
-                          type: "project", 
-                          id: project.id, 
-                          name: project.name 
-                        })}
-                        className="text-gray-600 hover:text-red-400"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+      ) : !projects || projects.length === 0 ? (
+        <div className="text-center py-20">
+          <FolderPlus className="h-16 w-16 text-zinc-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无项目</h3>
+          <p className="text-gray-600 mb-6">点击上方的新建项目按钮创建第一个项目</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {projects.map((project) => (
+            <Card key={project.id} className="bg-white border-gray-200">
+              <CardHeader 
+                className="cursor-pointer" 
+                onClick={() => toggleProject(project.id)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {expandedProjects.has(project.id) ? (
+                      <ChevronDown className="h-5 w-5 text-gray-600" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 text-gray-600" />
+                    )}
+                    <div>
+                      <CardTitle className="text-gray-900 flex items-center gap-2">
+                        {project.name}
+                        <Badge variant="outline" className="text-gray-600 border-gray-300">
+                          {project.code}
+                        </Badge>
+                        {!project.isActive && (
+                          <Badge className="bg-zinc-700 text-gray-600">已归档</Badge>
+                        )}
+                      </CardTitle>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {project.stages.length} 个阶段 · 
+                        {project.stages.reduce((sum, s) => sum + s.taskPoolCount, 0)} 个任务池
+                      </p>
                     </div>
                   </div>
-                </CardHeader>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setProjectDialog({ open: true, mode: "edit", project })}
+                      className="text-gray-600 hover:text-gray-900"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDeleteDialog({ 
+                        open: true, 
+                        type: "project", 
+                        id: project.id, 
+                        name: project.name 
+                      })}
+                      className="text-gray-600 hover:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
 
-                {expandedProjects.has(project.id) && (
-                  <CardContent className="pt-0">
-                    <div className="border-t border-gray-200 pt-4 space-y-3">
-                      {project.stages.map((stage) => (
-                        <StageItem
-                          key={stage.id}
-                          stage={stage}
-                          onAddPool={() => setPoolDialog({ 
-                            open: true, 
-                            stageId: stage.id, 
-                            stageName: stage.name 
-                          })}
-                          onDelete={() => setDeleteDialog({ 
-                            open: true, 
-                            type: "stage", 
-                            id: stage.id, 
-                            name: stage.name 
-                          })}
-                        />
-                      ))}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setStageDialog({ open: true, projectId: project.id })}
-                        className="border-dashed border-gray-300 text-gray-600 hover:text-gray-900 w-full"
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        添加阶段
-                      </Button>
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
-      </main>
+              {expandedProjects.has(project.id) && (
+                <CardContent className="pt-0">
+                  <div className="border-t border-gray-200 pt-4 space-y-3">
+                    {project.stages.map((stage) => (
+                      <StageItem
+                        key={stage.id}
+                        stage={stage}
+                        onAddPool={() => setPoolDialog({ 
+                          open: true, 
+                          stageId: stage.id, 
+                          stageName: stage.name 
+                        })}
+                        onDelete={() => setDeleteDialog({ 
+                          open: true, 
+                          type: "stage", 
+                          id: stage.id, 
+                          name: stage.name 
+                        })}
+                      />
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setStageDialog({ open: true, projectId: project.id })}
+                      className="border-dashed border-gray-300 text-gray-600 hover:text-gray-900 w-full"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      添加阶段
+                    </Button>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Project Dialog */}
       <ProjectFormDialog
@@ -376,7 +360,7 @@ function ProjectsManageContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AppLayout>
   );
 }
 

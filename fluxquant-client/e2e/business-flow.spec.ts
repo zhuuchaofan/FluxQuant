@@ -120,7 +120,7 @@ test.describe.serial('完整业务流程测试', () => {
 
   test('步骤4: 访问矩阵视图查看分配', async ({ page }) => {
     await login(page);
-    await page.goto('/matrix');
+    await page.goto('/admin/matrix');
     await page.waitForLoadState('networkidle');
     
     // 等待加载

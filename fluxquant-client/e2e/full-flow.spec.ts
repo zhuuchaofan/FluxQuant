@@ -175,7 +175,7 @@ test.describe('FluxQuant 完整业务流程', () => {
     });
 
     test('应该可以访问矩阵页面', async ({ page }) => {
-      await page.goto('/matrix');
+      await page.goto('/admin/matrix');
       await page.waitForLoadState('networkidle');
       
       // 矩阵页面应该显示项目选择或矩阵数据

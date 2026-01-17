@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { 
-  Zap, Plus, ArrowLeft, Loader2, Pencil, Trash2, 
+  Plus, Loader2, Pencil, Trash2, 
   Key, Users, Shield, UserCog, UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { AuthGuard } from "@/components/auth-guard";
-import { GlobalUserMenu } from "@/components/global-user-menu";
+import { AppLayout } from "@/components/layout";
 import {
   getUsersAction,
   createUserAction,
@@ -144,128 +143,113 @@ function UsersManageContent() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-blue-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 backdrop-blur-md bg-white/80">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">用户管理</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button 
-              onClick={() => setUserDialog({ open: true, mode: "create" })} 
-              className="bg-blue-600 hover:bg-blue-500"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              新建用户
-            </Button>
-            <GlobalUserMenu />
-          </div>
+    <AppLayout
+      title="用户管理"
+      backHref="/admin"
+      headerActions={
+        <Button 
+          onClick={() => setUserDialog({ open: true, mode: "create" })} 
+          className="bg-blue-600 hover:bg-blue-500"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          新建用户
+        </Button>
+      }
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-          </div>
-        ) : !users || users.length === 0 ? (
-          <div className="text-center py-20">
-            <Users className="h-16 w-16 text-zinc-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无用户</h3>
-            <p className="text-gray-600 mb-6">点击上方的新建用户按钮创建账户</p>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {users.map((user) => {
-              const roleInfo = roleLabels[user.role] || roleLabels.Employee;
-              const RoleIcon = roleInfo.icon;
-              
-              return (
-                <Card key={user.id} className="bg-white border-gray-200">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                          <RoleIcon className={`h-5 w-5 ${roleInfo.color.split(" ")[0]}`} />
-                        </div>
-                        <div>
-                          <p className="text-gray-900 font-medium">
-                            {user.displayName || user.username}
-                          </p>
-                          <p className="text-xs text-gray-500">@{user.username}</p>
-                        </div>
+      ) : !users || users.length === 0 ? (
+        <div className="text-center py-20">
+          <Users className="h-16 w-16 text-zinc-600 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无用户</h3>
+          <p className="text-gray-600 mb-6">点击上方的新建用户按钮创建账户</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {users.map((user) => {
+            const roleInfo = roleLabels[user.role] || roleLabels.Employee;
+            const RoleIcon = roleInfo.icon;
+            
+            return (
+              <Card key={user.id} className="bg-white border-gray-200">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <RoleIcon className={`h-5 w-5 ${roleInfo.color.split(" ")[0]}`} />
                       </div>
-                      <Badge variant="outline" className={roleInfo.color}>
-                        {roleInfo.label}
-                      </Badge>
+                      <div>
+                        <p className="text-gray-900 font-medium">
+                          {user.displayName || user.username}
+                        </p>
+                        <p className="text-xs text-gray-500">@{user.username}</p>
+                      </div>
                     </div>
+                    <Badge variant="outline" className={roleInfo.color}>
+                      {roleInfo.label}
+                    </Badge>
+                  </div>
 
-                    <div className="space-y-1 text-sm mb-4">
-                      <p className="text-gray-600">{user.email}</p>
-                      <p className="text-gray-500">
-                        {user.allocationCount} 个任务分配
-                      </p>
-                    </div>
+                  <div className="space-y-1 text-sm mb-4">
+                    <p className="text-gray-600">{user.email}</p>
+                    <p className="text-gray-500">
+                      {user.allocationCount} 个任务分配
+                    </p>
+                  </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                      <Badge 
-                        variant="outline" 
-                        className={user.isActive 
-                          ? "text-green-400 border-green-400/30" 
-                          : "text-gray-500 border-gray-300"
-                        }
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                    <Badge 
+                      variant="outline" 
+                      className={user.isActive 
+                        ? "text-green-400 border-green-400/30" 
+                        : "text-gray-500 border-gray-300"
+                      }
+                    >
+                      {user.isActive ? "活跃" : "已禁用"}
+                    </Badge>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setPasswordDialog({ 
+                          open: true, 
+                          userId: user.id, 
+                          username: user.username 
+                        })}
+                        className="text-gray-600 hover:text-gray-900 h-8 w-8"
                       >
-                        {user.isActive ? "活跃" : "已禁用"}
-                      </Badge>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setPasswordDialog({ 
-                            open: true, 
-                            userId: user.id, 
-                            username: user.username 
-                          })}
-                          className="text-gray-600 hover:text-gray-900 h-8 w-8"
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setUserDialog({ open: true, mode: "edit", user })}
-                          className="text-gray-600 hover:text-gray-900 h-8 w-8"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteDialog({ 
-                            open: true, 
-                            userId: user.id, 
-                            username: user.username 
-                          })}
-                          className="text-gray-600 hover:text-red-400 h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                        <Key className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setUserDialog({ open: true, mode: "edit", user })}
+                        className="text-gray-600 hover:text-gray-900 h-8 w-8"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteDialog({ 
+                          open: true, 
+                          userId: user.id, 
+                          username: user.username 
+                        })}
+                        className="text-gray-600 hover:text-red-400 h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-      </main>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* User Dialog */}
       <UserFormDialog
@@ -324,7 +308,7 @@ function UsersManageContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AppLayout>
   );
 }
 
