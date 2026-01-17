@@ -17,6 +17,7 @@ export interface MatrixCellDto {
   progressPercent: number;
   isCompleted: boolean;
   isLagging: boolean;
+  isActive: boolean;
 }
 
 export interface MatrixRowDto {

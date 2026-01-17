@@ -24,7 +24,7 @@ public class MyStreamService
     {
         var allocations = await _dbContext.Allocations
             .AsNoTracking()
-            .Where(a => a.UserId == userId)
+            .Where(a => a.UserId == userId && a.IsActive)
             .Include(a => a.TaskPool)
                 .ThenInclude(t => t.Stage)
                     .ThenInclude(s => s.Project)

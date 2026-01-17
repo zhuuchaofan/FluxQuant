@@ -27,6 +27,9 @@ public class Allocation
     /// <summary>当前除外量（快照）</summary>
     public int CurrentExcluded { get; set; }
     
+    /// <summary>是否活跃（禁用后为 false，员工看不到但保留历史数据）</summary>
+    public bool IsActive { get; set; } = true;
+    
     /// <summary>创建时间</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     

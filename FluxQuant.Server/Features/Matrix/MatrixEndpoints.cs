@@ -43,6 +43,11 @@ public class MatrixEndpoints : ICarterModule
         group.MapGet("/employees", GetEmployees)
             .WithName("GetEmployees")
             .WithSummary("获取员工列表");
+
+        // 禁用/启用分配
+        group.MapPatch("/allocations/{id:int}/toggle", ToggleAllocation)
+            .WithName("ToggleAllocation")
+            .WithSummary("禁用或启用分配");
     }
 
     private static async Task<IResult> GetProjects(
@@ -133,5 +138,23 @@ public class MatrixEndpoints : ICarterModule
     {
         var employees = await service.GetEmployeesAsync(ct);
         return Results.Ok(employees);
+    }
+
+    private static async Task<IResult> ToggleAllocation(
+        int id,
+        ClaimsPrincipal user,
+        MatrixService service,
+        CancellationToken ct)
+    {
+        var role = user.FindFirst(ClaimTypes.Role)?.Value;
+        if (role != UserRole.Admin.ToString() && role != UserRole.Manager.ToString())
+        {
+            return Results.Forbid();
+        }
+
+        var result = await service.ToggleAllocationAsync(id, ct);
+        return result.IsSuccess 
+            ? Results.Ok(result.Data)
+            : Results.BadRequest(new { Error = result.Error });
     }
 }

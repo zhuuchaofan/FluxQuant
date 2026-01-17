@@ -12,6 +12,9 @@ public record MatrixCellDto
     public int CurrentValid { get; init; }
     public int CurrentExcluded { get; init; }
     
+    /// <summary>是否活跃（未禁用）</summary>
+    public bool IsActive { get; init; } = true;
+    
     /// <summary>进度百分比</summary>
     public decimal ProgressPercent => TargetQuota > 0 
         ? Math.Round((decimal)(CurrentValid + CurrentExcluded) / TargetQuota * 100, 1) 
@@ -147,4 +150,16 @@ public record ProjectListDto
     public int StageCount { get; init; }
     public int TaskPoolCount { get; init; }
     public decimal OverallProgress { get; init; }
+}
+
+/// <summary>
+/// 分配切换响应 DTO
+/// </summary>
+public record AllocationToggleDto
+{
+    public int AllocationId { get; init; }
+    public int UserId { get; init; }
+    public required string UserName { get; init; }
+    public required string TaskPoolName { get; init; }
+    public bool IsActive { get; init; }
 }

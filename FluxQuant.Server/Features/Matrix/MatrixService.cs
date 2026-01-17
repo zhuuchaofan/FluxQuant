@@ -100,7 +100,8 @@ public class MatrixService
                         UserName = a.User!.DisplayName ?? a.User.Username,
                         TargetQuota = a.TargetQuota,
                         CurrentValid = a.CurrentValid,
-                        CurrentExcluded = a.CurrentExcluded
+                        CurrentExcluded = a.CurrentExcluded,
+                        IsActive = a.IsActive
                     }).ToList()
             }).ToList()
         }).ToList();
@@ -293,5 +294,37 @@ public class MatrixService
             .ToListAsync(ct);
 
         return employees;
+    }
+
+    /// <summary>
+    /// 禁用或启用分配
+    /// </summary>
+    public async Task<Result<AllocationToggleDto>> ToggleAllocationAsync(int allocationId, CancellationToken ct = default)
+    {
+        var allocation = await _dbContext.Allocations
+            .Include(a => a.User)
+            .Include(a => a.TaskPool)
+            .FirstOrDefaultAsync(a => a.Id == allocationId, ct);
+
+        if (allocation == null)
+        {
+            return Result<AllocationToggleDto>.Failure("未找到该分配");
+        }
+
+        allocation.IsActive = !allocation.IsActive;
+        await _dbContext.SaveChangesAsync(ct);
+
+        _logger.LogInformation(
+            "切换分配状态: AllocationId={Id}, IsActive={IsActive}",
+            allocation.Id, allocation.IsActive);
+
+        return Result<AllocationToggleDto>.Success(new AllocationToggleDto
+        {
+            AllocationId = allocation.Id,
+            UserId = allocation.UserId ?? 0,
+            UserName = allocation.User?.DisplayName ?? allocation.User?.Username ?? "未知",
+            TaskPoolName = allocation.TaskPool.Name,
+            IsActive = allocation.IsActive
+        });
     }
 }

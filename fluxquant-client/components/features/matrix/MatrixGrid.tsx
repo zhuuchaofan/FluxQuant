@@ -4,12 +4,18 @@ import { useState, useMemo, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Settings2, AlertTriangle, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Settings2, AlertTriangle, ChevronDown, ChevronRight, Plus, Ban, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MatrixDataDto, MatrixRowDto, MatrixCellDto, MatrixUserDto } from "./types";
 import { QuotaAdjustDialog } from "./QuotaAdjustDialog";
 import { CreateAllocationDialog } from "./CreateAllocationDialog";
-import { updateAllocationAction } from "@/lib/actions/matrix";
+import { updateAllocationAction, toggleAllocationAction } from "@/lib/actions/matrix";
 
 interface MatrixGridProps {
   data: MatrixDataDto;
@@ -63,6 +69,20 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
       toast.error(result.error || "更新失败");
     }
     setEditingCell(null);
+  };
+
+  const handleToggleAllocation = async (allocationId: number) => {
+    const result = await toggleAllocationAction(allocationId);
+    if (result.success) {
+      if (result.data?.isActive) {
+        toast.success(`已启用分配: ${result.data.userName}`);
+      } else {
+        toast.success(`已禁用分配: ${result.data?.userName}（员工将不再看到此任务）`);
+      }
+      onRefresh();
+    } else {
+      toast.error(result.error || "操作失败");
+    }
   };
 
   // 扁平化所有用户列
@@ -164,6 +184,7 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
                         existingUserIds: pool.allocations.map(a => a.userId),
                       })
                     }
+                    onToggleAllocation={handleToggleAllocation}
                   />
                 ))}
             </Fragment>
@@ -212,6 +233,7 @@ interface TaskPoolRowProps {
   onCancelEdit: () => void;
   onOpenQuotaDialog: () => void;
   onOpenCreateDialog: () => void;
+  onToggleAllocation: (allocationId: number) => void;
 }
 
 function TaskPoolRow({
@@ -224,6 +246,7 @@ function TaskPoolRow({
   onCancelEdit,
   onOpenQuotaDialog,
   onOpenCreateDialog,
+  onToggleAllocation,
 }: TaskPoolRowProps) {
   // 构建用户到分配的映射
   const allocationMap = useMemo(() => {
@@ -307,7 +330,7 @@ function TaskPoolRow({
         }
 
         return (
-          <td key={user.id} className="px-3 py-3 text-center">
+          <td key={user.id} className={`px-3 py-3 text-center ${!allocation.isActive ? 'opacity-50' : ''}`}>
             {isEditing && editingCell ? (
               <Input
                 value={editingCell.value}
@@ -321,23 +344,56 @@ function TaskPoolRow({
                 className="w-16 h-8 text-center bg-white border-blue-500 text-gray-900 font-mono text-sm"
               />
             ) : (
-              <button
-                onClick={() => onStartEdit(allocation.allocationId, allocation.targetQuota)}
-                className={`
-                  px-2 py-1 rounded font-mono text-sm transition-colors
-                  ${allocation.isCompleted 
-                    ? "bg-green-100 text-green-700 border-b-2 border-green-500" 
-                    : allocation.isLagging 
-                    ? "bg-yellow-100 text-yellow-700" 
-                    : "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                  }
-                `}
-              >
-                {allocation.targetQuota}
-                <span className="text-xs text-gray-500 ml-1">
-                  ({allocation.currentValid}/{allocation.targetQuota})
-                </span>
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`
+                      px-2 py-1 rounded font-mono text-sm transition-colors
+                      ${!allocation.isActive
+                        ? "bg-gray-200 text-gray-400 line-through"
+                        : allocation.isCompleted 
+                        ? "bg-green-100 text-green-700 border-b-2 border-green-500" 
+                        : allocation.isLagging 
+                        ? "bg-yellow-100 text-yellow-700" 
+                        : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                      }
+                    `}
+                  >
+                    {allocation.targetQuota}
+                    <span className="text-xs text-gray-500 ml-1">
+                      ({allocation.currentValid}/{allocation.targetQuota})
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="bg-white border-gray-200">
+                  <DropdownMenuItem 
+                    onClick={() => onStartEdit(allocation.allocationId, allocation.targetQuota)}
+                    className="text-gray-700 focus:bg-gray-100 cursor-pointer"
+                  >
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    修改配额
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => onToggleAllocation(allocation.allocationId)}
+                    className={allocation.isActive 
+                      ? "text-red-600 focus:bg-red-50 cursor-pointer" 
+                      : "text-green-600 focus:bg-green-50 cursor-pointer"
+                    }
+                  >
+                    {allocation.isActive ? (
+                      <>
+                        <Ban className="mr-2 h-4 w-4" />
+                        禁用分配
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        启用分配
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </td>
         );

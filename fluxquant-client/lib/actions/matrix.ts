@@ -96,3 +96,20 @@ export async function adjustQuotaAction(taskPoolId: number, newQuota: number, re
 export async function getEmployeesAction() {
   return await authFetch<MatrixUserDto[]>("/api/v1/admin/employees");
 }
+
+interface AllocationToggleDto {
+  allocationId: number;
+  userId: number;
+  userName: string;
+  taskPoolName: string;
+  isActive: boolean;
+}
+
+/**
+ * 禁用/启用分配
+ */
+export async function toggleAllocationAction(allocationId: number) {
+  return await authFetch<AllocationToggleDto>(`/api/v1/admin/allocations/${allocationId}/toggle`, {
+    method: "PATCH",
+  });
+}
