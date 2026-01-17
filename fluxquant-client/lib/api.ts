@@ -1,7 +1,7 @@
 /**
  * API 基础 URL
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5555";
 
 /**
  * 统一的 API 响应类型

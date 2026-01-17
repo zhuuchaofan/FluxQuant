@@ -64,7 +64,7 @@ try
     {
         options.AddPolicy("Development", policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins("http://localhost:3333")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
