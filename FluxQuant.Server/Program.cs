@@ -54,6 +54,7 @@ try
     builder.Services.AddScoped<FluxQuant.Server.Features.Auth.AuthService>();
     builder.Services.AddScoped<FluxQuant.Server.Features.MyStream.MyStreamService>();
     builder.Services.AddScoped<FluxQuant.Server.Features.Report.ReportService>();
+    builder.Services.AddScoped<FluxQuant.Server.Features.Matrix.MatrixService>();
 
     // Carter (Minimal API 路由)
     builder.Services.AddCarter();
