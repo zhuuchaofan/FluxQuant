@@ -57,6 +57,7 @@ try
     builder.Services.AddScoped<FluxQuant.Server.Features.Matrix.MatrixService>();
     builder.Services.AddScoped<FluxQuant.Server.Features.Dashboard.DashboardService>();
     builder.Services.AddScoped<FluxQuant.Server.Features.Seed.SeedService>();
+    builder.Services.AddScoped<FluxQuant.Server.Features.Admin.AdminCrudService>();
 
     // Carter (Minimal API 路由)
     builder.Services.AddCarter();

@@ -89,6 +89,19 @@ export async function apiPatch<T, D = unknown>(
 }
 
 /**
+ * PUT 请求封装
+ */
+export async function apiPut<T, D = unknown>(
+  path: string,
+  data: D
+): Promise<ApiResponse<T>> {
+  return apiClient<T>(path, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
  * DELETE 请求封装
  */
 export async function apiDelete<T>(path: string): Promise<ApiResponse<T>> {

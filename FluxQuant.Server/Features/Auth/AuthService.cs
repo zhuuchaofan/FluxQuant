@@ -98,6 +98,27 @@ public class AuthService
     }
 
     /// <summary>
+    /// 根据 ID 获取用户信息
+    /// </summary>
+    public async Task<UserDto?> GetUserByIdAsync(int id, CancellationToken ct = default)
+    {
+        var user = await _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
+
+        if (user == null) return null;
+
+        return new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            DisplayName = user.DisplayName,
+            Role = user.Role.ToString()
+        };
+    }
+
+    /// <summary>
     /// 生成 JWT Token 和响应
     /// </summary>
     private AuthResponse GenerateAuthResponse(User user)

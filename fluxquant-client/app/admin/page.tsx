@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Zap, LayoutGrid, Loader2, ChevronRight, BarChart3 } from "lucide-react";
+import { 
+  Zap, LayoutGrid, Loader2, ChevronRight, BarChart3, 
+  FolderPlus, Users, Settings, Plus
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -37,7 +40,13 @@ export default function AdminDashboard() {
               管理后台
             </Badge>
           </div>
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-2">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="text-zinc-300 hover:text-white">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                统计面板
+              </Button>
+            </Link>
             <Link href="/my-stream">
               <Button variant="ghost" className="text-zinc-300 hover:text-white">
                 <LayoutGrid className="mr-2 h-4 w-4" />
@@ -49,9 +58,75 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">项目管理</h1>
-          <p className="text-zinc-400">选择项目查看分配矩阵和进度</p>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Link href="/admin/projects">
+            <Card className="bg-zinc-800/50 border-zinc-700/50 hover:border-blue-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <FolderPlus className="h-5 w-5 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium">项目管理</p>
+                  <p className="text-xs text-zinc-500">创建与配置项目</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/admin/users">
+            <Card className="bg-zinc-800/50 border-zinc-700/50 hover:border-cyan-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-cyan-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium">用户管理</p>
+                  <p className="text-xs text-zinc-500">账户与权限</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard">
+            <Card className="bg-zinc-800/50 border-zinc-700/50 hover:border-green-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                  <BarChart3 className="h-5 w-5 text-green-400" />
+                </div>
+                <div>
+                  <p className="text-white font-medium">统计报表</p>
+                  <p className="text-xs text-zinc-500">数据可视化</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Card className="bg-zinc-800/30 border-zinc-700/30 border-dashed">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-zinc-700/50 flex items-center justify-center">
+                <Settings className="h-5 w-5 text-zinc-500" />
+              </div>
+              <div>
+                <p className="text-zinc-500 font-medium">系统设置</p>
+                <p className="text-xs text-zinc-600">即将推出</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Projects Section */}
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1">项目概览</h2>
+            <p className="text-zinc-400">选择项目查看分配矩阵和进度</p>
+          </div>
+          <Link href="/admin/projects">
+            <Button className="bg-blue-600 hover:bg-blue-500">
+              <Plus className="mr-2 h-4 w-4" />
+              新建项目
+            </Button>
+          </Link>
         </div>
 
         {isLoading ? (
@@ -64,9 +139,15 @@ export default function AdminDashboard() {
               <BarChart3 className="h-8 w-8 text-zinc-600" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">暂无项目</h3>
-            <p className="text-zinc-400 text-sm max-w-xs">
-              请先创建项目和任务池
+            <p className="text-zinc-400 text-sm max-w-xs mb-6">
+              点击上方的新建项目按钮创建第一个项目
             </p>
+            <Link href="/admin/projects">
+              <Button className="bg-blue-600 hover:bg-blue-500">
+                <Plus className="mr-2 h-4 w-4" />
+                创建项目
+              </Button>
+            </Link>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
