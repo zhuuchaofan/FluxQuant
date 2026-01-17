@@ -31,6 +31,8 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
   const [createDialog, setCreateDialog] = useState<{
     taskPoolId: number;
     taskPoolName: string;
+    totalQuota: number;
+    assignedTotal: number;
     existingUserIds: number[];
   } | null>(null);
 
@@ -157,6 +159,8 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
                       setCreateDialog({
                         taskPoolId: pool.taskPoolId,
                         taskPoolName: pool.taskPoolName,
+                        totalQuota: pool.totalQuota,
+                        assignedTotal: pool.assignedTotal,
                         existingUserIds: pool.allocations.map(a => a.userId),
                       })
                     }
@@ -187,6 +191,8 @@ export function MatrixGrid({ data, onRefresh }: MatrixGridProps) {
           onClose={() => setCreateDialog(null)}
           taskPoolId={createDialog.taskPoolId}
           taskPoolName={createDialog.taskPoolName}
+          totalQuota={createDialog.totalQuota}
+          assignedTotal={createDialog.assignedTotal}
           existingUserIds={createDialog.existingUserIds}
           availableUsers={allUsers.map(u => ({ userId: u.id, displayName: u.name }))}
           onSuccess={onRefresh}

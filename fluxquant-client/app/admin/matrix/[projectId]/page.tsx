@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MatrixGrid } from "@/components/features/matrix";
 import { AuthGuard } from "@/components/auth-guard";
+import { GlobalUserMenu } from "@/components/global-user-menu";
 import { getMatrixDataAction } from "@/lib/actions/matrix";
 
 export default function MatrixPage() {
@@ -100,6 +101,8 @@ function MatrixContent() {
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
+
+            <GlobalUserMenu />
           </div>
         </div>
       </header>

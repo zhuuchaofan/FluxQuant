@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { AuthGuard } from "@/components/auth-guard";
+import { GlobalUserMenu } from "@/components/global-user-menu";
 import { getProjectsAction } from "@/lib/actions/matrix";
 
 export default function AdminDashboard() {
@@ -62,6 +63,7 @@ function AdminDashboardContent() {
                 员工视图
               </Button>
             </Link>
+            <GlobalUserMenu />
           </nav>
         </div>
       </header>

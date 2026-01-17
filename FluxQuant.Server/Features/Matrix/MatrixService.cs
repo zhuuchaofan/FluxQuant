@@ -63,18 +63,11 @@ public class MatrixService
 
         if (project == null) return null;
 
-        // 获取所有相关用户
-        var userIds = project.Stages
-            .SelectMany(s => s.TaskPools)
-            .SelectMany(t => t.Allocations)
-            .Where(a => a.UserId.HasValue)
-            .Select(a => a.UserId!.Value)
-            .Distinct()
-            .ToList();
-
+        // 只获取 Employee 角色的活跃用户（不包括管理员）
         var users = await _dbContext.Users
             .AsNoTracking()
-            .Where(u => userIds.Contains(u.Id))
+            .Where(u => u.IsActive && u.Role == Domain.Enums.UserRole.Employee)
+            .OrderBy(u => u.Username)
             .Select(u => new MatrixUserDto
             {
                 Id = u.Id,
@@ -290,7 +283,7 @@ public class MatrixService
     {
         var employees = await _dbContext.Users
             .AsNoTracking()
-            .Where(u => u.IsActive)
+            .Where(u => u.IsActive && u.Role == Domain.Enums.UserRole.Employee)
             .OrderBy(u => u.Username)
             .Select(u => new MatrixUserDto
             {
